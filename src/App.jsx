@@ -833,26 +833,19 @@ function ChurnView(){
 
 // ── CRM View ──────────────────────────────────────────────────────────────────
 export default function App(){
-  const [tab,setTab]=useState("line");
-  const [lineTab,setLineTab]=useState("sales");
-  const [custs,setCusts]=useState(CUSTS_INIT);
+  const [tab,setTab]=useState("crm");
+const [custs,setCusts]=useState(CUSTS_INIT);
   const addCust=c=>setCusts(p=>[...p,c]);
   const m=custs.filter(c=>c.type==="monthly").length;
   const co=custs.filter(c=>c.type==="company").length;
   const a=custs.filter(c=>c.type==="annual").length;
 
   const MAIN_NAV=[
-    {id:"line",label:"LINE Hub",icon:"💬"},
     {id:"crm",label:"CRM",icon:"👥"},
     {id:"db",label:"Dashboard",icon:"📊"},
     {id:"pipe",label:"Pipeline",icon:"🎯"},
     {id:"tgt",label:"เป้าเซลล์",icon:"📈"},
     {id:"churn",label:"Churn",icon:"❌"},
-  ];
-  const LINE_TABS=[
-    {id:"sales",label:"เซลล์",icon:"💬",color:C.line},
-    {id:"sec",label:"เลขา",icon:"📎",color:C.purple},
-    {id:"acct",label:"บัญชี",icon:"🧾",color:C.blue},
   ];
 
   return(
@@ -874,22 +867,7 @@ export default function App(){
       </div>
 
       <div style={{flex:1,overflow:"hidden",display:"flex",flexDirection:"column",minHeight:0}}>
-        {tab==="line" && (
-          <div style={{display:"flex",flexDirection:"column",height:"100%",overflow:"hidden"}}>
-            <div style={{display:"flex",borderBottom:`0.5px solid ${C.bdr}`,background:C.white,flexShrink:0}}>
-              {LINE_TABS.map(lt=>(
-                <button key={lt.id} onClick={()=>setLineTab(lt.id)} style={{flex:1,background:lineTab===lt.id?lt.color+"14":"transparent",color:lineTab===lt.id?lt.color:"var(--color-text-secondary)",border:"none",borderBottom:lineTab===lt.id?`2px solid ${lt.color}`:"2px solid transparent",padding:"9px 6px",cursor:"pointer",fontFamily:"inherit",fontWeight:500,fontSize:11,whiteSpace:"nowrap"}}>
-                  {lt.icon} {lt.label}
-                </button>
-              ))}
-            </div>
-            <div style={{flex:1,overflow:"hidden",display:"flex",flexDirection:"column",minHeight:0}}>
-              {lineTab==="sales" && <LineSalesView onAddCust={addCust}/>}
-              {lineTab==="sec"   && <LineSecView/>}
-              {lineTab==="acct"  && <LineAcctView/>}
-            </div>
-          </div>
-        )}
+  
         {tab==="crm"   && <CRMView custs={custs} setCusts={setCusts}/>}
         {tab==="db"    && <DashboardView custs={custs}/>}
         {tab==="pipe"  && <PipelineView custs={custs}/>}
