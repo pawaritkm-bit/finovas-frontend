@@ -1,0 +1,352 @@
+<!DOCTYPE html>
+<html lang="th">
+<head>
+<meta charset="UTF-8"/>
+<meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0"/>
+<title>Finovas — กรอกข้อมูลลูกค้า</title>
+<script src="https://static.line-scdn.net/liff/edge/2/sdk.js"></script>
+<style>
+*{box-sizing:border-box;margin:0;padding:0;-webkit-tap-highlight-color:transparent}
+body{font-family:-apple-system,BlinkMacSystemFont,'Segoe UI',Sarabun,sans-serif;background:#F4F7FA;min-height:100vh;padding-bottom:80px}
+.header{background:#0D1B2A;color:#fff;padding:14px 16px;position:sticky;top:0;z-index:10;display:flex;align-items:center;gap:10px}
+.logo{width:32px;height:32px;background:#1D9E75;border-radius:8px;display:flex;align-items:center;justify-content:center;font-weight:900;font-size:14px;color:#0D1B2A;flex-shrink:0}
+.header-title{font-size:14px;font-weight:600}
+.header-sub{font-size:11px;color:#1D9E75;margin-top:2px}
+.step-bar{display:flex;gap:4px;padding:12px 16px 0;background:#fff;border-bottom:1px solid #E5E8EC}
+.step-seg{flex:1;height:3px;border-radius:2px;background:#E5E8EC;transition:background .3s;margin-bottom:10px}
+.step-seg.active{background:#06C755}
+.step-label{display:flex;padding:0 16px 10px;background:#fff;border-bottom:1px solid #E5E8EC}
+.step-label span{flex:1;font-size:10px;text-align:center;color:#9BA3AF;font-weight:500}
+.step-label span.active{color:#06C755}
+.section{padding:14px 16px 0}
+.section-label{font-size:11px;font-weight:600;color:#fff;background:#0D1B2A;border-radius:5px;padding:3px 10px;margin-bottom:10px;display:inline-block}
+.field{margin-bottom:12px}
+.field label{font-size:11px;font-weight:500;color:#6B7A8D;margin-bottom:4px;display:block}
+.field label .req{color:#A32D2D}
+.field input[type=text],
+.field input[type=number],
+.field input[type=date],
+.field textarea,
+.field select{width:100%;border:1px solid #DDE1E8;border-radius:8px;padding:10px 12px;font-size:13px;font-family:inherit;outline:none;background:#fff;color:#0D1B2A;transition:border .2s;appearance:none;-webkit-appearance:none}
+.field input[type=date]{color:#0D1B2A}
+.field select{background-image:url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='12' height='8' viewBox='0 0 12 8'%3E%3Cpath d='M1 1l5 5 5-5' stroke='%236B7A8D' stroke-width='1.5' fill='none' stroke-linecap='round'/%3E%3C/svg%3E");background-repeat:no-repeat;background-position:right 12px center;padding-right:32px}
+.field input:focus,.field textarea:focus,.field select:focus{border-color:#06C755}
+.field textarea{resize:vertical;min-height:70px}
+.grid2{display:grid;grid-template-columns:1fr 1fr;gap:8px}
+.radio-group{display:flex;gap:6px;flex-wrap:wrap}
+.radio-btn{flex:1;min-width:80px;border:1px solid #DDE1E8;border-radius:8px;padding:8px 6px;font-size:12px;text-align:center;cursor:pointer;background:#fff;color:#6B7A8D;font-family:inherit;transition:all .2s}
+.radio-btn.selected{border-color:#06C755;background:#E8F5E9;color:#1B5E20;font-weight:500}
+.check-item{display:flex;align-items:flex-start;gap:8px;padding:9px 0;border-bottom:1px solid #F1F3F6;cursor:pointer}
+.check-item:last-child{border-bottom:none}
+.check-item input[type=checkbox]{width:18px;height:18px;accent-color:#06C755;flex-shrink:0;margin-top:1px;cursor:pointer}
+.check-item span{font-size:12.5px;color:#374151;line-height:1.5}
+.footer{position:fixed;bottom:0;left:0;right:0;background:#fff;border-top:1px solid #E5E8EC;padding:12px 16px;display:flex;gap:8px;z-index:10}
+.btn-back{flex:1;background:#F4F7FA;color:#374151;border:1px solid #DDE1E8;border-radius:10px;padding:12px;font-family:inherit;font-size:13px;font-weight:500;cursor:pointer}
+.btn-next{flex:2;background:#06C755;color:#fff;border:none;border-radius:10px;padding:12px;font-family:inherit;font-size:13px;font-weight:600;cursor:pointer}
+.btn-next:disabled{background:#B0E5C1;cursor:not-allowed}
+.success{display:flex;flex-direction:column;align-items:center;justify-content:center;min-height:60vh;padding:32px 24px;text-align:center}
+.success-icon{font-size:64px;margin-bottom:16px}
+.success-title{font-size:20px;font-weight:700;color:#1D9E75;margin-bottom:8px}
+.success-sub{font-size:13px;color:#6B7A8D;line-height:1.6}
+.hidden{display:none!important}
+</style>
+</head>
+<body>
+
+<div class="header">
+  <div class="logo">F</div>
+  <div>
+    <div class="header-title">Finovas — บันทึกลูกค้าใหม่</div>
+    <div class="header-sub">กรอกข้อมูลหลังปิดการขาย</div>
+  </div>
+</div>
+
+<div style="background:#fff;border-bottom:1px solid #E5E8EC">
+  <div class="step-bar">
+    <div class="step-seg active" id="seg1"></div>
+    <div class="step-seg" id="seg2"></div>
+    <div class="step-seg" id="seg3"></div>
+  </div>
+  <div class="step-label">
+    <span class="active" id="lbl1">1. ข้อมูลลูกค้า</span>
+    <span id="lbl2">2. ธุรกิจ & ราคา</span>
+    <span id="lbl3">3. รายละเอียด</span>
+  </div>
+</div>
+
+<!-- STEP 1 -->
+<div id="step1">
+  <div class="section">
+    <div style="margin-top:4px"></div>
+    <div class="field"><label>ชื่อลูกค้า <span class="req">*</span></label><input type="text" id="name" placeholder="คุณ..."/></div>
+    <div class="field"><label>ชื่อกิจการ</label><input type="text" id="biz" placeholder="บริษัท / ร้านค้า..."/></div>
+
+    <div class="field">
+      <label>บริการ <span class="req">*</span></label>
+      <select id="svcSelect">
+        <option value="">-- เลือกบริการ --</option>
+        <option>บัญชีรายเดือนนิติบุคคล</option>
+        <option>บัญชีรายเดือนบุคคล</option>
+        <option>ปิดงบ (ผู้สอบบัญชี)</option>
+        <option>บัญชีภายใน</option>
+        <option>ออดิตตรวจนับคลัง</option>
+        <option>วางระบบบัญชี</option>
+        <option>ยื่นภาษีรายปี</option>
+        <option>จดบริษัท</option>
+        <option>จด หจก</option>
+        <option>ปิดบริษัท</option>
+        <option>ทำวีซ่า</option>
+        <option>รับเปิด Holding</option>
+      </select>
+    </div>
+
+    <div class="field">
+      <label>ประเภทธุรกิจ</label>
+      <select id="bizTypeSelect" onchange="onBizTypeChange(this.value)">
+        <option value="">-- เลือกประเภท --</option>
+        <option>SME</option>
+        <option>บุคคลธรรมดา</option>
+        <option>บริษัทขนาดกลาง</option>
+        <option>ร้านค้าออนไลน์</option>
+        <option>ธุรกิจนำเข้า/ส่งออก</option>
+        <option>ธุรกิจบริการ</option>
+        <option>ธุรกิจอสังหาริมทรัพย์</option>
+        <option>ธุรกิจอาหาร/ร้านอาหาร</option>
+        <option>อินฟลูเอนเซอร์/ฟรีแลนซ์</option>
+        <option>อื่นๆ (ระบุ)</option>
+      </select>
+    </div>
+    <div class="field hidden" id="bizTypeOtherField">
+      <label>ระบุประเภทธุรกิจ</label>
+      <input type="text" id="bizTypeOther" placeholder="เช่น ธุรกิจซักรีด, ขายรถมือสอง..."/>
+    </div>
+
+    <div class="field">
+      <label>VAT</label>
+      <div class="radio-group">
+        <button class="radio-btn" onclick="pickRadio(this,'vat','จดแล้ว')">จดแล้ว</button>
+        <button class="radio-btn" onclick="pickRadio(this,'vat','ยังไม่จด')">ยังไม่จด</button>
+        <button class="radio-btn" onclick="pickRadio(this,'vat','ไม่ทราบ')">ไม่ทราบ</button>
+      </div>
+    </div>
+  </div>
+</div>
+
+<!-- STEP 2 -->
+<div id="step2" class="hidden">
+  <div class="section">
+    <div style="margin-top:4px"></div>
+    <div class="grid2">
+      <div class="field">
+        <label>วันเริ่มงาน</label>
+        <input type="date" id="startDate"/>
+      </div>
+      <div class="field"><label>จำนวนพนักงาน</label>
+        <select id="employees">
+          <option value="">-- เลือก --</option>
+          <option>1 คน</option>
+          <option>2-5 คน</option>
+          <option>6-10 คน</option>
+          <option>11-20 คน</option>
+          <option>21-50 คน</option>
+          <option>50+ คน</option>
+        </select>
+      </div>
+    </div>
+    <div class="grid2">
+      <div class="field"><label>รายได้/เดือน</label>
+        <select id="revenue">
+          <option value="">-- เลือก --</option>
+          <option>ต่ำกว่า 100,000</option>
+          <option>100,000-300,000</option>
+          <option>300,000-500,000</option>
+          <option>500,000-1,000,000</option>
+          <option>1,000,000-3,000,000</option>
+          <option>3,000,000+</option>
+        </select>
+      </div>
+      <div class="field"><label>เอกสาร/เดือน</label>
+        <select id="docCount">
+          <option value="">-- เลือก --</option>
+          <option>น้อยกว่า 20 รายการ</option>
+          <option>20-50 รายการ</option>
+          <option>50-100 รายการ</option>
+          <option>100-200 รายการ</option>
+          <option>200+ รายการ</option>
+        </select>
+      </div>
+    </div>
+    <div class="field"><label>ราคาที่ตกลง (บาท/เดือน) <span class="req">*</span></label><input type="number" id="price" placeholder="4000"/></div>
+
+    <div class="section-label" style="margin-top:4px">📂 เอกสารที่รับแล้ว</div>
+    <div id="docChecks"></div>
+    <div class="field" style="margin-top:10px"><label>เอกสารที่ยังขาด</label><input type="text" id="docsMissing" placeholder="(ถ้ามี)"/></div>
+  </div>
+</div>
+
+<!-- STEP 3 -->
+<div id="step3" class="hidden">
+  <div class="section">
+    <div style="margin-top:4px"></div>
+    <div class="field"><label>สิ่งที่ลูกค้ากังวล</label><textarea id="concern" placeholder="เช่น กลัวยื่นภาษีผิด..."></textarea></div>
+    <div class="field"><label>สิ่งที่เซลล์รับปากไว้</label><textarea id="promise" placeholder="- วางแผนภาษีฟรีตลอดปี&#10;- ปิดงบฟรี..." style="min-height:90px"></textarea></div>
+    <div class="field"><label>หมายเหตุเพิ่มเติม</label><textarea id="note" placeholder="ย้ายมาจากสำนักงานเดิม..."></textarea></div>
+    <div class="field"><label>เซลล์ผู้ปิด</label><input type="text" id="salesBy" placeholder="ชื่อเซลล์..."/></div>
+  </div>
+</div>
+
+<!-- SUCCESS -->
+<div id="stepSuccess" class="hidden">
+  <div class="success">
+    <div class="success-icon">✅</div>
+    <div class="success-title">บันทึกเรียบร้อยแล้วค่ะ!</div>
+    <div class="success-sub">ข้อมูลลูกค้าเข้า CRM แล้ว<br/>ส่งสรุปให้เลขาอัตโนมัติแล้วค่ะ 🙏<br/><br/>ปิดหน้าต่างนี้ได้เลยค่ะ</div>
+  </div>
+</div>
+
+<div class="footer" id="footer">
+  <button class="btn-back hidden" id="btnBack" onclick="prevStep()">← ย้อนกลับ</button>
+  <button class="btn-next" id="btnNext" onclick="nextStep()">ถัดไป →</button>
+</div>
+
+<script>
+const API = 'https://finovas-crm-production.up.railway.app';
+const DOCS = ["หนังสือรับรอง","ภ.พ.20","บัตรประชาชน","สำเนาทะเบียนพาณิชย์","งบการเงิน","เดินบัญชี"];
+
+let step = 1;
+let selVat = '';
+let selDocs = [];
+let displayName = 'เซลล์';
+const radios = {};
+
+// Init LIFF
+liff.init({ liffId: '2010493797-cloQKQIm' }).then(async () => {
+  if (liff.isLoggedIn()) {
+    const profile = await liff.getProfile();
+    displayName = profile.displayName;
+    document.getElementById('salesBy').value = displayName;
+  }
+}).catch(e => console.log('LIFF init error:', e));
+
+// Build doc checks
+const docDiv = document.getElementById('docChecks');
+DOCS.forEach(d => {
+  const item = document.createElement('label');
+  item.className = 'check-item';
+  const safe = d.replace(/'/g, "\\'");
+  item.innerHTML = `<input type="checkbox" value="${d}" onchange="togDoc('${safe}',this.checked)"/><span>${d}</span>`;
+  docDiv.appendChild(item);
+});
+
+function togDoc(d, checked) {
+  if (checked) selDocs.push(d);
+  else selDocs = selDocs.filter(x => x !== d);
+}
+
+function pickRadio(el, group, val) {
+  el.closest('.radio-group').querySelectorAll('.radio-btn').forEach(b => b.classList.remove('selected'));
+  el.classList.add('selected');
+  radios[group] = val;
+}
+
+function updateUI() {
+  [1,2,3].forEach(i => {
+    document.getElementById('step'+i).classList.toggle('hidden', step !== i);
+    document.getElementById('seg'+i).classList.toggle('active', step >= i);
+    document.getElementById('lbl'+i).classList.toggle('active', step === i);
+  });
+  document.getElementById('stepSuccess').classList.toggle('hidden', step !== 4);
+  document.getElementById('footer').classList.toggle('hidden', step === 4);
+  document.getElementById('btnBack').classList.toggle('hidden', step === 1);
+  document.getElementById('btnNext').textContent = step === 3 ? '💾 บันทึก + ส่งเลขา' : 'ถัดไป →';
+  window.scrollTo(0, 0);
+}
+
+function nextStep() {
+  if (step === 1) {
+    if (!document.getElementById('name').value.trim()) { alert('กรุณากรอกชื่อลูกค้าค่ะ'); return; }
+    if (!document.getElementById('svcSelect').value) { alert('กรุณาเลือกบริการค่ะ'); return; }
+    step = 2;
+  } else if (step === 2) {
+    if (!document.getElementById('price').value) { alert('กรุณากรอกราคาค่ะ'); return; }
+    step = 3;
+  } else if (step === 3) {
+    submitForm(); return;
+  }
+  updateUI();
+}
+
+function prevStep() {
+  if (step > 1) { step--; updateUI(); }
+}
+
+function onBizTypeChange(val) {
+  const otherField = document.getElementById('bizTypeOtherField');
+  if (val === 'อื่นๆ (ระบุ)') {
+    otherField.classList.remove('hidden');
+  } else {
+    otherField.classList.add('hidden');
+  }
+}
+
+function getBizType() {
+  const sel = document.getElementById('bizTypeSelect').value;
+  if (sel === 'อื่นๆ (ระบุ)') {
+    return document.getElementById('bizTypeOther').value.trim() || 'อื่นๆ';
+  }
+  return sel;
+}
+
+async function submitForm() {
+  const btn = document.getElementById('btnNext');
+  btn.textContent = '⏳ กำลังบันทึก...';
+  btn.disabled = true;
+
+  const name = document.getElementById('name').value.trim();
+  const biz = document.getElementById('biz').value.trim();
+  const svc = document.getElementById('svcSelect').value;
+  const bizType = getBizType();
+  const price = parseInt(document.getElementById('price').value) || 0;
+  const salesBy = document.getElementById('salesBy').value.trim() || displayName;
+  const startDate = document.getElementById('startDate').value;
+
+  try {
+    await fetch(`${API}/api/customers`, {
+      method: 'POST',
+      headers: { 'Content-Type': 'application/json' },
+      body: JSON.stringify({
+        name, biz, service: svc, biz_type: bizType,
+        start_date: startDate,
+        vat: radios['vat'] || '',
+        revenue_est: document.getElementById('revenue').value,
+        doc_count_est: document.getElementById('docCount').value,
+        employees: document.getElementById('employees').value,
+        price, docs_ok: selDocs.length >= 2,
+        doc_risk: selDocs.length < 2 ? 'high' : 'none',
+        concern: document.getElementById('concern').value,
+        promise: document.getElementById('promise').value,
+        note: document.getElementById('note').value,
+        sales_by: salesBy, status: 'B', source: 'LIFF เซลล์',
+        cust_type: svc.includes('จด') ? 'company' : svc.includes('ภาษี') ? 'annual' : 'monthly',
+        pipeline_status: 'ลูกค้าปัจจุบัน',
+      })
+    });
+
+    await fetch(`${API}/api/ai/summarize-deal`, {
+      method: 'POST',
+      headers: { 'Content-Type': 'application/json' },
+      body: JSON.stringify({ name, biz, service: svc, price, sales_by: salesBy, concern: document.getElementById('concern').value, promise: document.getElementById('promise').value })
+    });
+
+    step = 4; updateUI();
+  } catch (err) {
+    btn.textContent = '💾 บันทึก + ส่งเลขา';
+    btn.disabled = false;
+    alert('เกิดข้อผิดพลาด: ' + err.message);
+  }
+}
+
+updateUI();
+</script>
+</body>
+</html>
