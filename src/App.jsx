@@ -11,6 +11,9 @@ const C = {
   surf:"var(--color-background-secondary)",
   bdr:"var(--color-border-tertiary)",
   muted:"var(--color-text-secondary)",
+  textSub:"var(--color-text-secondary)",
+  text:"var(--color-text-primary)",
+  bg:"var(--color-background-tertiary)",
   white:"var(--color-background-primary)",
   line:"#06C755", linedk:"#075E54",
 };
@@ -585,236 +588,32 @@ function LineAcctView(){
 }
 
 // ── CRM View ──────────────────────────────────────────────────────────────────
-function CRMView({custs,setCusts}){
-  const [search,setSearch]=useState("");
-  const [fType,setFType]=useState("");
-  const [fStatus,setFStatus]=useState("");
-  const [sel,setSel]=useState(null);
-  const filtered=custs.filter(c=>{
-    const q=search.toLowerCase();
-    return (!q||c.name.toLowerCase().includes(q)||c.biz.toLowerCase().includes(q))&&(!fType||c.type===fType)&&(!fStatus||c.status===fStatus);
-  });
-  const selected=sel?custs.find(c=>c.id===sel.id):null;
-  function upd(id,patch){setCusts(p=>p.map(c=>c.id===id?{...c,...patch}:c));if(sel?.id===id)setSel(s=>({...s,...patch}));}
-
-  const statusColor = {A:C.amber,B:C.green,C:C.purple,D:C.red};
-  const statusBg = {A:C.amberBg,B:C.greenBg,C:C.purpleBg,D:C.redBg};
-
-  const isWide = typeof window !== 'undefined' && window.innerWidth >= 600;
-
-  return(
-    <div style={{display:"flex",flexDirection:"column",height:"100%",overflow:"hidden"}}>
-
-      {/* Search + Filter bar */}
-      <div style={{padding:"12px 16px",background:"var(--color-background-primary)",borderBottom:`1.5px solid ${C.bdr}`,display:"flex",gap:8,flexWrap:"wrap",alignItems:"center",flexShrink:0}}>
-        <div style={{position:"relative",flex:1,minWidth:120}}>
-          <span style={{position:"absolute",left:10,top:"50%",transform:"translateY(-50%)",fontSize:14,color:C.muted,fontSize:14}}>🔍</span>
-          <input value={search} onChange={e=>setSearch(e.target.value)} placeholder="ค้นหาชื่อหรือกิจการ..."
-            style={{width:"100%",border:`1.5px solid ${C.bdr}`,borderRadius:10,padding:"9px 10px 9px 32px",fontSize:13,fontFamily:"inherit",outline:"none",background:C.surf}}/>
-        </div>
-        <select value={fType} onChange={e=>setFType(e.target.value)} style={{border:`1.5px solid ${C.bdr}`,borderRadius:10,padding:"9px 10px",fontSize:13,fontFamily:"inherit",background:C.surf}}>
-          <option value="">ทุกประเภท</option>
-          {Object.entries(TM).map(([k,v])=><option key={k} value={k}>{v.l}</option>)}
-        </select>
-        <select value={fStatus} onChange={e=>setFStatus(e.target.value)} style={{border:`1.5px solid ${C.bdr}`,borderRadius:10,padding:"9px 10px",fontSize:13,fontFamily:"inherit",background:C.surf}}>
-          <option value="">ทุกสถานะ</option>
-          {Object.entries(SM).map(([k,v])=><option key={k} value={k}>{v.l}</option>)}
-        </select>
-      </div>
-
-      {/* Count */}
-      <div style={{padding:"8px 16px",background:"var(--color-background-secondary)",borderBottom:`1px solid ${C.bdr}`,flexShrink:0}}>
-        <span style={{fontSize:12,color:C.muted,fontWeight:500}}>พบ {filtered.length} รายการ</span>
-      </div>
-
-      {/* TABLE — desktop */}
-      {isWide ? (
-        <div style={{flex:1,overflowY:"auto"}}>
-          <table style={{width:"100%",borderCollapse:"collapse",fontSize:13}}>
-            <thead style={{position:"sticky",top:0,zIndex:1}}>
-              <tr style={{background:C.navy,color:"#fff"}}>
-                {["ชื่อลูกค้า","กิจการ","บริการ","ประเภท","สถานะ","ชำระ","ราคา","เซลล์"].map(h=>(
-                  <th key={h} style={{padding:"11px 12px",textAlign:"left",fontSize:12,fontWeight:600,whiteSpace:"nowrap"}}>{h}</th>
-                ))}
-              </tr>
-            </thead>
-            <tbody>
-              {filtered.length===0 && <tr><td colSpan={8} style={{padding:32,textAlign:"center",color:C.muted}}>ไม่พบลูกค้าค่ะ</td></tr>}
-              {filtered.map((c,i)=>{
-                const isSelected = selected?.id===c.id;
-                return(
-                  <tr key={c.id} onClick={()=>setSel(isSelected?null:c)}
-                    style={{background:isSelected?`${C.teal}12`:i%2===0?"var(--color-background-primary)":"var(--color-background-secondary)",
-                      borderLeft:isSelected?`4px solid #6C5CE7`:"4px solid transparent",
-                      cursor:"pointer",borderBottom:`1px solid ${C.bdr}`,transition:"background .15s"}}>
-                    <td style={{padding:"12px 12px"}}>
-                      <div style={{display:"flex",alignItems:"center",gap:8}}>
-                        <div style={{width:32,height:32,borderRadius:"50%",background:`${C.teal}20`,display:"flex",alignItems:"center",justifyContent:"center",fontWeight:700,fontSize:12,color:C.teal,flexShrink:0}}>
-                          {c.name.replace('คุณ','').trim()[0]||'?'}
-                        </div>
-                        <span style={{fontWeight:700,color:"var(--color-text-primary)"}}>{c.name}</span>
-                      </div>
-                    </td>
-                    <td style={{padding:"12px 12px",color:C.muted,fontSize:12}}>{c.biz}</td>
-                    <td style={{padding:"12px 12px"}}><Pill c={C.teal} bg={C.tealBg}>{c.svc}</Pill></td>
-                    <td style={{padding:"12px 12px"}}><Pill c={TM[c.type].c} bg={TM[c.type].bg}>{TM[c.type].l}</Pill></td>
-                    <td style={{padding:"12px 12px"}}><Pill c={statusColor[c.status]} bg={statusBg[c.status]}>{SM[c.status].l}</Pill></td>
-                    <td style={{padding:"12px 12px"}}>
-                      {c.paid
-                        ?<Pill c={C.green} bg={C.greenBg}>✓ ชำระ</Pill>
-                        :<Pill c={C.amber} bg={C.amberBg}>⏳ ค้าง</Pill>}
-                      {c.docRisk && <Pill c={C.red} bg={C.redBg} style={{marginLeft:4}}>📄</Pill>}
-                    </td>
-                    <td style={{padding:"12px 12px",fontWeight:700,color:C.green,whiteSpace:"nowrap"}}>
-                      {c.price>0?`฿${c.price.toLocaleString()}`:"-"}
-                    </td>
-                    <td style={{padding:"12px 12px",color:C.muted,fontSize:12}}>{c.by}</td>
-                  </tr>
-                );
-              })}
-            </tbody>
-          </table>
-        </div>
-      ) : (
-        /* CARD LIST — mobile */
-        <div style={{flex:1,overflowY:"auto"}}>
-          {filtered.length===0 && <div style={{padding:40,textAlign:"center",color:C.muted,fontSize:14}}>ไม่พบลูกค้าค่ะ</div>}
-          {filtered.map(c=>{
-            const isSelected = selected?.id===c.id;
-            return(
-              <div key={c.id} onClick={()=>setSel(isSelected?null:c)}
-                style={{padding:"14px 16px",borderBottom:`1.5px solid ${C.bdr}`,cursor:"pointer",
-                  background:isSelected?"#EEEBff":C.white,
-                  borderLeft:isSelected?`4px solid #6C5CE7`:"4px solid transparent",
-                  transition:"background .15s"}}>
-                <div style={{display:"flex",alignItems:"center",gap:8,marginBottom:6}}>
-                  <div style={{width:38,height:38,borderRadius:"50%",background:"#EEEBff",display:"flex",alignItems:"center",justifyContent:"center",fontWeight:700,fontSize:14,color:"#6C5CE7",flexShrink:0}}>
-                    {c.name.replace('คุณ','').trim()[0]||'?'}
-                  </div>
-                  <div style={{flex:1,minWidth:0}}>
-                    <div style={{fontWeight:700,fontSize:15,color:"var(--color-text-primary)",marginBottom:2}}>{c.name}</div>
-                    <div style={{fontSize:12,color:C.muted,fontWeight:500}}>{c.biz}</div>
-                  </div>
-                  <div style={{textAlign:"right",flexShrink:0}}>
-                    {c.price>0 && <div style={{fontSize:15,fontWeight:700,color:C.green}}>฿{c.price.toLocaleString()}</div>}
-                    <div style={{fontSize:11,color:C.muted}}>/เดือน</div>
-                  </div>
-                </div>
-                <div style={{display:"flex",gap:5,flexWrap:"wrap",paddingLeft:46}}>
-                  <Pill c={TM[c.type].c} bg={TM[c.type].bg}>{TM[c.type].l}</Pill>
-                  <Pill c={statusColor[c.status]} bg={statusBg[c.status]}>{SM[c.status].l}</Pill>
-                  {c.paid?<Pill c={C.green} bg={C.greenBg}>✓ ชำระแล้ว</Pill>:<Pill c={C.amber} bg={C.amberBg}>⏳ ค้างชำระ</Pill>}
-                  {c.docRisk && <Pill c={C.red} bg={C.redBg}>📄 เอกสารค้าง</Pill>}
-                  {c.by!=="-" && <span style={{fontSize:11,color:C.muted,alignSelf:"center"}}>เซลล์: {c.by}</span>}
-                </div>
-              </div>
-            );
-          })}
-        </div>
-      )}
-
-      {/* Detail panel — bottom sheet style */}
-      {selected && (
-        <div style={{borderTop:`2px solid #6C5CE7`,background:"var(--color-background-primary)",maxHeight:"55%",overflowY:"auto",flexShrink:0}}>
-          {/* Header */}
-          <div style={{padding:"12px 16px",display:"flex",alignItems:"center",gap:10,borderBottom:`1px solid ${C.bdr}`,position:"sticky",top:0,background:"var(--color-background-primary)",zIndex:2}}>
-            <div style={{width:42,height:42,borderRadius:"50%",background:`${C.teal}20`,display:"flex",alignItems:"center",justifyContent:"center",fontWeight:700,fontSize:16,color:C.teal,flexShrink:0}}>
-              {selected.name.replace('คุณ','').trim()[0]||'?'}
-            </div>
-            <div style={{flex:1}}>
-              <div style={{fontWeight:700,fontSize:16,color:"var(--color-text-primary)"}}>{selected.name}</div>
-              <div style={{fontSize:13,color:C.muted}}>{selected.biz}</div>
-            </div>
-            <button onClick={()=>setSel(null)} style={{background:"var(--color-background-secondary)",border:`1px solid ${C.bdr}`,borderRadius:"50%",width:32,height:32,cursor:"pointer",fontSize:16,color:C.muted,display:"flex",alignItems:"center",justifyContent:"center"}}>✕</button>
-          </div>
-
-          <div style={{padding:"14px 16px"}}>
-            {/* Info grid */}
-            <div style={{display:"grid",gridTemplateColumns:"1fr 1fr",gap:10,marginBottom:14}}>
-              {[["🛠 บริการ",selected.svc],["🏢 ธุรกิจ",selected.bizType],["📣 ช่องทาง",selected.src],["👤 เซลล์",selected.by],["💰 ราคา",selected.price>0?`฿${selected.price.toLocaleString()}/เดือน`:"ยังไม่กำหนด"],["📍 Pipeline",selected.pipe||"-"]].map(([l,v])=>(
-                <div key={l} style={{background:"var(--color-background-secondary)",borderRadius:10,padding:"10px 12px",border:`1px solid ${C.bdr}`}}>
-                  <div style={{fontSize:11,color:C.muted,marginBottom:4}}>{l}</div>
-                  <div style={{fontSize:13,color:"var(--color-text-primary)",fontWeight:600}}>{v}</div>
-                </div>
-              ))}
-            </div>
-
-            {/* Status buttons */}
-            <div style={{marginBottom:10}}>
-              <div style={{fontSize:12,fontWeight:600,color:C.muted,marginBottom:8}}>สถานะลูกค้า</div>
-              <div style={{display:"flex",gap:6,flexWrap:"wrap"}}>
-                {Object.entries(SM).map(([k,v])=>(
-                  <button key={k} onClick={()=>upd(selected.id,{status:k})}
-                    style={{background:selected.status===k?v.bg:C.surf,color:selected.status===k?v.c:C.muted,
-                      border:`1.5px solid ${selected.status===k?v.c:C.bdr}`,borderRadius:20,padding:"6px 14px",
-                      cursor:"pointer",fontSize:12,fontWeight:600,fontFamily:"inherit",transition:"all .15s"}}>
-                    {v.l}
-                  </button>
-                ))}
-              </div>
-            </div>
-
-            {/* Action buttons */}
-            <div style={{display:"grid",gridTemplateColumns:"1fr 1fr",gap:8,marginBottom:10}}>
-              <button onClick={()=>upd(selected.id,{paid:!selected.paid})}
-                style={{background:selected.paid?C.greenBg:"var(--color-background-secondary)",color:selected.paid?C.green:C.muted,
-                  border:`1.5px solid ${selected.paid?C.green:C.bdr}`,borderRadius:10,padding:"10px",
-                  cursor:"pointer",fontFamily:"inherit",fontWeight:600,fontSize:13}}>
-                {selected.paid?"✅ ชำระแล้ว":"⏳ ยังไม่ชำระ"}
-              </button>
-              <button onClick={()=>upd(selected.id,{docRisk:!selected.docRisk})}
-                style={{background:!selected.docRisk?C.greenBg:C.redBg,color:!selected.docRisk?C.green:C.red,
-                  border:`1.5px solid ${!selected.docRisk?C.green:C.red}`,borderRadius:10,padding:"10px",
-                  cursor:"pointer",fontFamily:"inherit",fontWeight:600,fontSize:13}}>
-                {!selected.docRisk?"📂 เอกสารครบ":"📄 เอกสารขาด"}
-              </button>
-            </div>
-
-            <div style={{display:"grid",gridTemplateColumns:"1fr 1fr",gap:8,marginBottom:10}}>
-              <button onClick={()=>{
-                const newStatus = prompt("เปลี่ยนสถานะเป็น (A/B/C/D):", selected.status);
-                if(newStatus && ['A','B','C','D'].includes(newStatus.toUpperCase())) {
-                  upd(selected.id,{status:newStatus.toUpperCase()});
-                  fetch(`https://finovas-crm-production.up.railway.app/api/customers/${selected.id}`,{method:'PATCH',headers:{'Content-Type':'application/json'},body:JSON.stringify({status:newStatus.toUpperCase()})});
-                }
-              }} style={{background:"var(--color-background-secondary)",color:"var(--color-text-primary)",border:`1.5px solid ${C.bdr}`,borderRadius:10,padding:"10px",cursor:"pointer",fontFamily:"inherit",fontWeight:600,fontSize:13}}>
-                ✏️ แก้ไขสถานะ
-              </button>
-              <button onClick={()=>{
-                if(confirm(`ลบ ${selected.name} ออกจากระบบ?`)) {
-                  fetch(`https://finovas-crm-production.up.railway.app/api/customers/${selected.id}`,{method:'DELETE'})
-                    .then(()=>{ setCusts(p=>p.filter(c=>c.id!==selected.id)); setSel(null); });
-                }
-              }} style={{background:C.redBg,color:C.red,border:`1.5px solid ${C.red}`,borderRadius:10,padding:"10px",cursor:"pointer",fontFamily:"inherit",fontWeight:600,fontSize:13}}>
-                🗑️ ลบออกจากระบบ
-              </button>
-            </div>
-
-            {selected.concern && (
-              <div style={{background:C.amberBg,border:`1.5px solid ${C.amber}50`,borderRadius:12,padding:"12px 14px"}}>
-                <div style={{fontSize:12,fontWeight:700,color:C.amber,marginBottom:6}}>⚠️ สิ่งที่ลูกค้ากังวล</div>
-                <div style={{fontSize:13,color:"var(--color-text-primary)",lineHeight:1.6}}>{selected.concern}</div>
-              </div>
-            )}
-          </div>
-        </div>
-      )}
-    </div>
-  );
+function mapCust(c){
+  return {
+    id:c.id, name:c.name||'', biz:c.biz||'',
+    type:c.cust_type||'monthly', svc:c.service||'',
+    status:c.status||'A', price:c.price||0,
+    src:c.source||'-', by:c.sales_by||'-',
+    paid:c.paid||false, docRisk:c.doc_risk==='high',
+    pipe:c.pipeline_status||'รอโทร',
+    bizType:c.biz_type||'', concern:c.concern||'',
+    phone:c.phone||'', phone_emergency:c.phone_emergency||'',
+    platform:c.platform||'', social_id:c.social_id||'',
+    services:c.services||'[]', note:c.note||'',
+  };
 }
 
-// ── Dashboard View ────────────────────────────────────────────────────────────
 function DashboardView({custs}){
-  const API = 'https://finovas-crm-production.up.railway.app';
-  const [ratings, setRatings] = React.useState([]);
-  const [docsChecked, setDocsChecked] = React.useState(0);
+  const API='https://finovas-crm-production.up.railway.app';
+  const [ratings,setRatings]=React.useState([]);
+  const [docsChecked,setDocsChecked]=React.useState(0);
 
   React.useEffect(()=>{
     fetch(`${API}/api/ratings`).then(r=>r.json()).then(d=>setRatings(Array.isArray(d)?d:[])).catch(()=>{});
     fetch(`${API}/api/documents`).then(r=>r.json()).then(d=>setDocsChecked((Array.isArray(d)?d:[]).filter(x=>x.status==='checked').length)).catch(()=>{});
   },[]);
 
-  const avgScore = ratings.length?(ratings.reduce((s,r)=>s+(r.score||0),0)/ratings.length).toFixed(1):'-';
+  const avgScore=ratings.length?(ratings.reduce((s,r)=>s+(r.score||0),0)/ratings.length).toFixed(1):'-';
   const monthly=custs.filter(c=>c.type==="monthly");
   const company=custs.filter(c=>c.type==="company");
   const annual=custs.filter(c=>c.type==="annual");
@@ -823,13 +622,13 @@ function DashboardView({custs}){
   const unpaid=custs.filter(c=>c.status==="B"&&!c.paid);
   const sources={};custs.forEach(c=>{if(c.src&&c.src!=='-')sources[c.src]=(sources[c.src]||0)+1;});
   const salesNames=[...new Set(custs.map(c=>c.by).filter(b=>b&&b!=='-'))];
-  const salesColors=["#6C5CE7","#00B894","#0984E3","#FDCB6E"];
+  const salesColors=["#6C5CE7","#00B894","#0984E3","#EF9F27"];
   const salesBgs=["#EEEBff","#E0FAF4","#E8F4FD","#FFF8E1"];
 
   return(
     <div style={{padding:16,overflowY:"auto",flex:1,background:"#F4F3FF"}}>
 
-      {/* KPI 4 กล่อง */}
+      {/* KPI Cards */}
       <div style={{display:"grid",gridTemplateColumns:"1fr 1fr",gap:10,marginBottom:14}}>
         {[
           {icon:"👥",label:"ลูกค้าทั้งหมด",val:custs.length,sub:`${monthly.length} รายเดือน`,bg:"linear-gradient(135deg,#AFA9EC,#EEEBff)",tc:"#26215C",sc:"#534AB7",mc:"#7F77DD"},
@@ -840,14 +639,14 @@ function DashboardView({custs}){
           <div key={k.label} style={{background:k.bg,borderRadius:16,padding:"18px",position:"relative",overflow:"hidden"}}>
             <div style={{position:"absolute",width:60,height:60,top:-15,right:-15,borderRadius:"50%",background:"rgba(255,255,255,.5)"}}/>
             <div style={{fontSize:22,marginBottom:6}}>{k.icon}</div>
-            <div style={{fontSize:28,fontWeight:800,color:k.tc,lineHeight:1}}>{k.val}</div>
-            <div style={{fontSize:11,color:k.sc,marginTop:4,fontWeight:600}}>{k.label}</div>
-            <div style={{fontSize:10,color:k.mc,marginTop:2}}>{k.sub}</div>
+            <div style={{fontSize:24,fontWeight:800,color:k.tc,letterSpacing:-.5}}>{k.val}</div>
+            <div style={{fontSize:11,color:k.sc,marginTop:2,fontWeight:600}}>{k.label}</div>
+            <div style={{fontSize:10,color:k.mc,marginTop:1}}>{k.sub}</div>
           </div>
         ))}
       </div>
 
-      {/* รายเดือน จดบริษัท ยื่นภาษี */}
+      {/* Service strip */}
       <div style={{display:"grid",gridTemplateColumns:"1fr 1fr 1fr",gap:8,marginBottom:14}}>
         <div style={{background:"#EEEBff",borderRadius:14,padding:"14px 10px",borderTop:"3px solid #6C5CE7",textAlign:"center"}}>
           <div style={{fontSize:20,marginBottom:4}}>📅</div>
@@ -893,7 +692,7 @@ function DashboardView({custs}){
         })}
       </div>
 
-      {/* ทีมบัญชี + ช่องทางที่มา */}
+      {/* ทีมบัญชี + ช่องทาง */}
       <div style={{display:"grid",gridTemplateColumns:"1fr 1fr",gap:10,marginBottom:12}}>
         <div style={{background:"#fff",borderRadius:16,border:"1px solid #E8E6FF",padding:14}}>
           <div style={{fontSize:13,fontWeight:700,color:"#1E1B4B",marginBottom:10}}>ทีมบัญชี</div>
@@ -902,7 +701,7 @@ function DashboardView({custs}){
             {label:"คะแนน",val:`${avgScore}/5 ⭐`,c:"#00B894",bg:"#E0FAF4"},
             {label:"รีวิว",val:`${ratings.length} ครั้ง`,c:"#0984E3",bg:"#E8F4FD"},
           ].map(i=>(
-            <div key={i.label} style={{borderRadius:12,padding:"10px 14px",display:"flex",justifyContent:"space-between",alignItems:"center",marginBottom:8,background:i.bg}}>
+            <div key={i.label} style={{borderRadius:10,padding:"9px 12px",display:"flex",justifyContent:"space-between",alignItems:"center",marginBottom:7,background:i.bg}}>
               <span style={{fontSize:11,color:"#8B8BAD"}}>{i.label}</span>
               <span style={{fontSize:12,fontWeight:700,color:i.c}}>{i.val}</span>
             </div>
@@ -910,9 +709,9 @@ function DashboardView({custs}){
         </div>
         <div style={{background:"#fff",borderRadius:16,border:"1px solid #E8E6FF",padding:14}}>
           <div style={{fontSize:13,fontWeight:700,color:"#1E1B4B",marginBottom:10}}>ช่องทางที่มา</div>
-          {Object.keys(sources).length===0 && <div style={{color:"#8B8BAD",fontSize:12,textAlign:"center",padding:"10px 0"}}>ยังไม่มีข้อมูล</div>}
+          {Object.keys(sources).length===0&&<div style={{color:"#8B8BAD",fontSize:12,textAlign:"center",padding:"10px 0"}}>ยังไม่มีข้อมูล</div>}
           {Object.entries(sources).sort((a,b)=>b[1]-a[1]).slice(0,4).map(([s,n],i)=>{
-            const barColors=["#6C5CE7","#A29BFE","#CECBF6","#EEEBff"];
+            const bc=["#6C5CE7","#A29BFE","#CECBF6","#EEEBff"][i];
             return(
               <div key={s} style={{marginBottom:8}}>
                 <div style={{display:"flex",justifyContent:"space-between",fontSize:11,marginBottom:3}}>
@@ -920,7 +719,7 @@ function DashboardView({custs}){
                   <span style={{fontWeight:700,color:"#6C5CE7"}}>{n}</span>
                 </div>
                 <div style={{height:8,borderRadius:4,background:"#F0EFF8",overflow:"hidden"}}>
-                  <div style={{width:`${custs.length?Math.round(n/custs.length*100):0}%`,height:"100%",borderRadius:4,background:barColors[i]||"#6C5CE7"}}/>
+                  <div style={{width:`${custs.length?Math.round(n/custs.length*100):0}%`,height:"100%",borderRadius:4,background:bc}}/>
                 </div>
               </div>
             );
@@ -931,7 +730,7 @@ function DashboardView({custs}){
       {/* ผลงานเซลล์ */}
       <div style={{background:"#fff",borderRadius:16,border:"1px solid #E8E6FF",padding:16,marginBottom:12}}>
         <div style={{fontSize:13,fontWeight:700,color:"#1E1B4B",marginBottom:12}}>ผลงานเซลล์</div>
-        {salesNames.length===0 && <div style={{color:"#8B8BAD",fontSize:12,textAlign:"center",padding:"10px 0"}}>ยังไม่มีข้อมูล</div>}
+        {salesNames.length===0&&<div style={{color:"#8B8BAD",fontSize:12,textAlign:"center",padding:"10px 0"}}>ยังไม่มีข้อมูล</div>}
         {salesNames.map((name,ni)=>{
           const mine=custs.filter(c=>c.by===name&&c.status==="B");
           const myRev=mine.filter(c=>c.paid).reduce((s,c)=>s+c.price,0);
@@ -956,21 +755,307 @@ function DashboardView({custs}){
         })}
       </div>
 
-      {/* เอกสารค้าง */}
-      {docRisk.length>0 && (
-        <div style={{background:"#FFEAEA",borderRadius:16,border:"1px solid #D6303130",padding:16}}>
-          <div style={{fontSize:13,fontWeight:700,color:"#791F1F",marginBottom:10}}>⚠️ เอกสารค้างส่ง</div>
-          {docRisk.map(c=>(
-            <div key={c.id} style={{display:"flex",alignItems:"center",gap:8,padding:"8px 0",borderBottom:"1px solid #D6303115"}}>
-              <div style={{width:8,height:8,borderRadius:"50%",background:"#D63031",flexShrink:0}}/>
-              <span style={{fontWeight:700,fontSize:13,color:"#1E1B4B",flex:1}}>{c.name}</span>
-              <span style={{fontSize:11,color:"#8B8BAD"}}>{c.by}</span>
-              <span style={{background:"#FFEAEA",color:"#D63031",borderRadius:20,padding:"2px 10px",fontSize:10,fontWeight:600}}>ค้าง</span>
-            </div>
+    </div>
+  );
+}
+
+function CRMView({custs,setCusts}){
+  const API='https://finovas-crm-production.up.railway.app';
+  const [search,setSearch]=useState("");
+  const [fType,setFType]=useState("");
+  const [fStatus,setFStatus]=useState("");
+  const [sel,setSel]=useState(null);
+  const [editing,setEditing]=useState(false);
+  const [editData,setEditData]=useState({});
+  const [showUpsell,setShowUpsell]=useState(false);
+  const [upsellData,setUpsellData]=useState({name:'',price:'',status:'unpaid',trend:'warm',note:''});
+  const [saving,setSaving]=useState(false);
+
+  const PLATFORMS=['Facebook','TikTok','Instagram','Google','Referral','Walk-in','อื่นๆ'];
+  const PLATFORM_SOCIAL={Facebook:'ชื่อ Facebook',TikTok:'ชื่อ TikTok',Instagram:'ชื่อ Instagram',Referral:'ชื่อคนที่แนะนำ'};
+  const TRENDS=[
+    {val:'hot',label:'ปิดได้แน่นอน',bg:'#FCEBEB',c:'#791F1F',bc:'#A32D2D'},
+    {val:'warm',label:'มีแนวโน้ม',bg:'#FAEEDA',c:'#412402',bc:'#854F0B'},
+    {val:'cold',label:'ยังไม่สนใจ',bg:'#E6F1FB',c:'#042C53',bc:'#185FA5'},
+    {val:'closed',label:'ปิดได้แล้ว',bg:'#E1F5EE',c:'#04342C',bc:'#0F6E56'},
+  ];
+
+  const filtered=custs.filter(c=>{
+    const q=search.toLowerCase();
+    const matchQ=!q||(c.name||'').toLowerCase().includes(q)||(c.biz||'').toLowerCase().includes(q);
+    const matchT=!fType||c.type===fType;
+    const matchS=!fStatus||c.status===fStatus;
+    return matchQ&&matchT&&matchS;
+  });
+
+  async function saveCust(){
+    setSaving(true);
+    try{
+      const res=await fetch(`${API}/api/customers/${sel.id}`,{method:'PATCH',headers:{'Content-Type':'application/json'},body:JSON.stringify(editData)});
+      const updated=await res.json();
+      setCusts(p=>p.map(c=>c.id===sel.id?{...c,...mapCust(updated)}:c));
+      setSel({...sel,...mapCust(updated)});
+      setEditing(false);
+    }catch(e){alert('บันทึกไม่สำเร็จ: '+e.message);}
+    setSaving(false);
+  }
+
+  async function deleteCust(){
+    if(!window.confirm('ลบลูกค้ารายนี้?'))return;
+    await fetch(`${API}/api/customers/${sel.id}`,{method:'DELETE'});
+    setCusts(p=>p.filter(c=>c.id!==sel.id));
+    setSel(null);
+  }
+
+  async function saveUpsell(){
+    if(!upsellData.name){alert('กรุณากรอกชื่อบริการค่ะ');return;}
+    setSaving(true);
+    try{
+      const services=sel.services?JSON.parse(sel.services):[];
+      services.push({...upsellData,isUpsell:true,by:upsellData.recommendedBy||''});
+      await fetch(`${API}/api/customers/${sel.id}`,{method:'PATCH',headers:{'Content-Type':'application/json'},body:JSON.stringify({services:JSON.stringify(services)})});
+      setCusts(p=>p.map(c=>c.id===sel.id?{...c,services:JSON.stringify(services)}:c));
+      setSel({...sel,services:JSON.stringify(services)});
+      setShowUpsell(false);
+      setUpsellData({name:'',price:'',status:'unpaid',trend:'warm',note:''});
+    }catch(e){alert('บันทึกไม่สำเร็จ');}
+    setSaving(false);
+  }
+
+  const selServices=sel?.services?JSON.parse(sel.services):[];
+  const mainRevenue=sel?.price||0;
+  const upsellRevenue=selServices.filter(s=>s.isUpsell&&s.status==='paid').reduce((a,s)=>a+(parseInt(s.price)||0),0);
+
+  return(
+    <div style={{flex:1,overflow:"hidden",display:"flex",flexDirection:"column",minHeight:0}}>
+
+      {/* Search & Filter */}
+      <div style={{padding:"12px 14px",background:C.white,borderBottom:`1px solid ${C.bdr}`,flexShrink:0}}>
+        <input value={search} onChange={e=>setSearch(e.target.value)} placeholder="🔍 ค้นหาชื่อ หรือกิจการ..."
+          style={{width:"100%",border:`1px solid ${C.bdr}`,borderRadius:10,padding:"9px 12px",fontSize:13,fontFamily:"inherit",outline:"none",background:C.bg,color:C.text,marginBottom:8}}/>
+        <div style={{display:"flex",gap:6}}>
+          {["","monthly","company","annual"].map((t,i)=>(
+            <button key={t} onClick={()=>setFType(t)} style={{flex:1,background:fType===t?"#6C5CE7":"#F4F3FF",color:fType===t?"#fff":"#8B8BAD",border:`1px solid ${fType===t?"#6C5CE7":"#E8E6FF"}`,borderRadius:8,padding:"6px 2px",fontSize:10,cursor:"pointer",fontFamily:"inherit",fontWeight:fType===t?700:400}}>
+              {["ทั้งหมด","รายเดือน","จดบริษัท","ยื่นภาษี"][i]}
+            </button>
           ))}
         </div>
-      )}
+      </div>
 
+      <div style={{flex:1,overflowY:"auto",padding:"10px 12px",background:C.bg}}>
+        {filtered.length===0&&<div style={{textAlign:"center",color:C.muted,padding:32,fontSize:14}}>ไม่พบลูกค้าค่ะ</div>}
+
+        {/* Customer list */}
+        {filtered.map(c=>(
+          <div key={c.id} onClick={()=>{setSel(c);setEditing(false);setShowUpsell(false);}}
+            style={{background:C.white,borderRadius:12,padding:"12px 14px",marginBottom:8,border:`1px solid ${sel?.id===c.id?"#6C5CE7":C.bdr}`,cursor:"pointer",boxShadow:sel?.id===c.id?"0 0 0 2px #6C5CE720":"none"}}>
+            <div style={{display:"flex",alignItems:"center",gap:10}}>
+              <div style={{width:38,height:38,borderRadius:10,background:"#EEEBff",display:"flex",alignItems:"center",justifyContent:"center",fontWeight:800,color:"#6C5CE7",fontSize:16,flexShrink:0}}>{(c.name||'?')[0]}</div>
+              <div style={{flex:1,minWidth:0}}>
+                <div style={{fontWeight:700,fontSize:13,color:C.text}}>{c.name}</div>
+                <div style={{fontSize:11,color:C.muted,overflow:"hidden",textOverflow:"ellipsis",whiteSpace:"nowrap"}}>{c.biz||'-'} · {c.svc||'-'}</div>
+              </div>
+              <div style={{textAlign:"right",flexShrink:0}}>
+                <div style={{fontWeight:700,color:"#00B894",fontSize:13}}>฿{(c.price||0).toLocaleString()}</div>
+                <Pill c={c.paid?"#00B894":"#E17055"} bg={c.paid?"#E0FAF4":"#FFF0EB"}>{c.paid?"ชำระแล้ว":"ค้างชำระ"}</Pill>
+              </div>
+            </div>
+          </div>
+        ))}
+
+        {/* Detail Panel */}
+        {sel && (
+          <div style={{background:C.white,borderRadius:14,border:`1px solid #E8E6FF`,marginTop:6,overflow:"hidden"}}>
+
+            {/* Header */}
+            <div style={{background:"linear-gradient(135deg,#1E1B4B,#534AB7)",padding:"16px"}}>
+              <div style={{display:"flex",alignItems:"center",gap:10,marginBottom:12}}>
+                <div style={{width:44,height:44,borderRadius:12,background:"rgba(255,255,255,.2)",display:"flex",alignItems:"center",justifyContent:"center",fontWeight:800,color:"#fff",fontSize:18,flexShrink:0}}>{(sel.name||'?')[0]}</div>
+                <div style={{flex:1}}>
+                  <div style={{color:"#fff",fontWeight:700,fontSize:15}}>{sel.name}</div>
+                  <div style={{color:"rgba(255,255,255,.6)",fontSize:11}}>{sel.biz||'-'} · เซลล์: {sel.by||'-'}</div>
+                </div>
+                <div style={{display:"flex",gap:6}}>
+                  <button onClick={()=>{setEditing(!editing);setEditData({phone:sel.phone||'',phone_emergency:sel.phone_emergency||'',platform:sel.platform||'',social_id:sel.social_id||'',note:sel.note||''});}} style={{background:"rgba(255,255,255,.15)",border:"none",borderRadius:8,padding:"5px 10px",color:"#fff",fontSize:11,cursor:"pointer",fontFamily:"inherit"}}>{editing?"ยกเลิก":"✏️ แก้ไข"}</button>
+                  <button onClick={deleteCust} style={{background:"rgba(211,63,63,.3)",border:"none",borderRadius:8,padding:"5px 10px",color:"#fff",fontSize:11,cursor:"pointer",fontFamily:"inherit"}}>🗑</button>
+                </div>
+              </div>
+              <div style={{display:"grid",gridTemplateColumns:"1fr 1fr",gap:8}}>
+                <div style={{background:"rgba(255,255,255,.1)",borderRadius:10,padding:"8px 10px"}}>
+                  <div style={{fontSize:10,color:"rgba(255,255,255,.5)",marginBottom:2}}>📞 เบอร์หลัก</div>
+                  {editing?(
+                    <input value={editData.phone||''} onChange={e=>setEditData({...editData,phone:e.target.value})} placeholder="08X-XXX-XXXX"
+                      style={{background:"rgba(255,255,255,.15)",border:"1px solid rgba(255,255,255,.3)",borderRadius:6,padding:"4px 8px",color:"#fff",fontSize:12,width:"100%",fontFamily:"inherit"}}/>
+                  ):(
+                    <div style={{fontSize:13,color:"#fff",fontWeight:500}}>{sel.phone||'— ยังไม่มี —'}</div>
+                  )}
+                </div>
+                <div style={{background:"rgba(255,255,255,.1)",borderRadius:10,padding:"8px 10px"}}>
+                  <div style={{fontSize:10,color:"rgba(255,255,255,.5)",marginBottom:2}}>🆘 ฉุกเฉิน</div>
+                  {editing?(
+                    <input value={editData.phone_emergency||''} onChange={e=>setEditData({...editData,phone_emergency:e.target.value})} placeholder="08X-XXX-XXXX"
+                      style={{background:"rgba(255,255,255,.15)",border:"1px solid rgba(255,255,255,.3)",borderRadius:6,padding:"4px 8px",color:"#fff",fontSize:12,width:"100%",fontFamily:"inherit"}}/>
+                  ):(
+                    <div style={{fontSize:13,color:"#fff",fontWeight:500}}>{sel.phone_emergency||'— ยังไม่มี —'}</div>
+                  )}
+                </div>
+              </div>
+            </div>
+
+            {/* Platform & Social */}
+            <div style={{padding:"14px",borderBottom:`1px solid ${C.bdr}`}}>
+              <div style={{fontSize:11,fontWeight:700,color:"#534AB7",marginBottom:10}}>📣 ช่องทางและโซเชียล</div>
+              {editing?(
+                <>
+                  <div style={{fontSize:12,color:C.muted,marginBottom:6}}>แพลตฟอร์มที่มา</div>
+                  <div style={{display:"flex",gap:6,flexWrap:"wrap",marginBottom:10}}>
+                    {PLATFORMS.map(p=>(
+                      <button key={p} onClick={()=>setEditData({...editData,platform:p,social_id:''})}
+                        style={{border:`1px solid ${editData.platform===p?"#534AB7":C.bdr}`,borderRadius:8,padding:"6px 10px",fontSize:11,background:editData.platform===p?"#534AB7":C.white,color:editData.platform===p?"#fff":C.muted,cursor:"pointer",fontFamily:"inherit",fontWeight:editData.platform===p?700:400}}>
+                        {p}
+                      </button>
+                    ))}
+                  </div>
+                  {editData.platform&&PLATFORM_SOCIAL[editData.platform]&&(
+                    <input value={editData.social_id||''} onChange={e=>setEditData({...editData,social_id:e.target.value})}
+                      placeholder={PLATFORM_SOCIAL[editData.platform]}
+                      style={{width:"100%",border:`1px solid ${C.bdr}`,borderRadius:10,padding:"9px 12px",fontSize:13,fontFamily:"inherit",outline:"none",background:C.bg,color:C.text}}/>
+                  )}
+                  {editData.platform==='อื่นๆ'&&(
+                    <input value={editData.social_id||''} onChange={e=>setEditData({...editData,social_id:e.target.value})}
+                      placeholder="ระบุแพลตฟอร์ม + ชื่อโปรไฟล์..."
+                      style={{width:"100%",border:`1px solid ${C.bdr}`,borderRadius:10,padding:"9px 12px",fontSize:13,fontFamily:"inherit",outline:"none",background:C.bg,color:C.text,marginTop:6}}/>
+                  )}
+                </>
+              ):(
+                <div style={{display:"flex",gap:8,flexWrap:"wrap"}}>
+                  <div style={{background:"#EEEBff",borderRadius:10,padding:"8px 12px",flex:1}}>
+                    <div style={{fontSize:10,color:"#8B8BAD",marginBottom:2}}>แพลตฟอร์ม</div>
+                    <div style={{fontSize:13,fontWeight:600,color:"#26215C"}}>{sel.platform||'— ยังไม่มี —'}</div>
+                  </div>
+                  <div style={{background:"#EEEBff",borderRadius:10,padding:"8px 12px",flex:1}}>
+                    <div style={{fontSize:10,color:"#8B8BAD",marginBottom:2}}>ชื่อโซเชียล</div>
+                    <div style={{fontSize:13,fontWeight:600,color:"#26215C"}}>{sel.social_id||'— ยังไม่มี —'}</div>
+                  </div>
+                </div>
+              )}
+            </div>
+
+            {/* Services */}
+            <div style={{padding:"14px",borderBottom:`1px solid ${C.bdr}`}}>
+              <div style={{fontSize:11,fontWeight:700,color:"#534AB7",marginBottom:10}}>💼 บริการและการชำระ</div>
+              {/* Main service */}
+              <div style={{background:"#E6F1FB",borderRadius:10,padding:"10px 12px",marginBottom:8,borderLeft:"3px solid #185FA5"}}>
+                <div style={{display:"flex",justifyContent:"space-between",alignItems:"center",marginBottom:4}}>
+                  <div style={{fontSize:12,fontWeight:600,color:"#042C53"}}>{sel.svc||'—'}</div>
+                  <div style={{fontSize:13,fontWeight:700,color:"#185FA5"}}>฿{(sel.price||0).toLocaleString()}</div>
+                </div>
+                <div style={{display:"flex",gap:6}}>
+                  <Pill c={sel.paid?"#0F6E56":"#633806"} bg={sel.paid?"#E1F5EE":"#FAEEDA"}>{sel.paid?"✅ ชำระแล้ว":"⏳ ยังไม่ชำระ"}</Pill>
+                </div>
+              </div>
+              {/* Upsell items */}
+              {selServices.filter(s=>s.isUpsell).map((s,i)=>(
+                <div key={i} style={{background:"#E1F5EE",borderRadius:10,padding:"10px 12px",marginBottom:8,borderLeft:"3px solid #0F6E56"}}>
+                  <div style={{display:"flex",justifyContent:"space-between",alignItems:"center",marginBottom:4}}>
+                    <div>
+                      <div style={{fontSize:10,color:"#0F6E56",fontWeight:600,marginBottom:1}}>⭐ Upsell</div>
+                      <div style={{fontSize:12,fontWeight:600,color:"#04342C"}}>{s.name}</div>
+                    </div>
+                    <div style={{fontSize:13,fontWeight:700,color:"#0F6E56"}}>฿{(parseInt(s.price)||0).toLocaleString()}</div>
+                  </div>
+                  <div style={{display:"flex",gap:5,flexWrap:"wrap"}}>
+                    <Pill c={s.status==='paid'?"#0F6E56":"#633806"} bg={s.status==='paid'?"#E1F5EE":"#FAEEDA"}>{s.status==='paid'?"✅ ชำระแล้ว":"⏳ ยังไม่ชำระ"}</Pill>
+                    {s.trend&&<Pill c="#534AB7" bg="#EEEBff">{TRENDS.find(t=>t.val===s.trend)?.label||s.trend}</Pill>}
+                    {s.note&&<div style={{fontSize:10,color:"#1D9E75",marginTop:3,fontStyle:"italic",width:"100%"}}>{s.note}</div>}
+                  </div>
+                </div>
+              ))}
+              {/* Add upsell button */}
+              <button onClick={()=>setShowUpsell(!showUpsell)}
+                style={{width:"100%",background:"#F4F3FF",color:"#534AB7",border:"1px dashed #AFA9EC",borderRadius:10,padding:10,fontSize:12,fontWeight:600,cursor:"pointer",fontFamily:"inherit",marginBottom:showUpsell?10:0}}>
+                {showUpsell?"ปิด ↑":"+ เพิ่ม Upsell / บริการเพิ่มเติม"}
+              </button>
+              {/* Upsell form */}
+              {showUpsell&&(
+                <div style={{background:"#F0FFF8",borderRadius:12,border:"1px solid #5DCAA5",padding:14}}>
+                  <div style={{fontSize:11,fontWeight:700,color:"#0F6E56",marginBottom:10}}>⭐ เพิ่ม Upsell ใหม่</div>
+                  <div style={{marginBottom:8}}>
+                    <div style={{fontSize:12,color:C.muted,marginBottom:4}}>ชื่อบริการ *</div>
+                    <input value={upsellData.name} onChange={e=>setUpsellData({...upsellData,name:e.target.value})} placeholder="เช่น วางแผนภาษี, ออดิต..."
+                      style={{width:"100%",border:`1px solid #5DCAA5`,borderRadius:10,padding:"9px 12px",fontSize:13,fontFamily:"inherit",outline:"none",background:"#fff",color:C.text}}/>
+                  </div>
+                  <div style={{display:"grid",gridTemplateColumns:"1fr 1fr",gap:8,marginBottom:8}}>
+                    <div>
+                      <div style={{fontSize:12,color:C.muted,marginBottom:4}}>ราคา (บาท)</div>
+                      <input type="number" value={upsellData.price} onChange={e=>setUpsellData({...upsellData,price:e.target.value})} placeholder="5,000"
+                        style={{width:"100%",border:`1px solid #5DCAA5`,borderRadius:10,padding:"9px 12px",fontSize:13,fontFamily:"inherit",outline:"none",background:"#fff",color:C.text}}/>
+                    </div>
+                    <div>
+                      <div style={{fontSize:12,color:C.muted,marginBottom:4}}>สถานะชำระ</div>
+                      <select value={upsellData.status} onChange={e=>setUpsellData({...upsellData,status:e.target.value})}
+                        style={{width:"100%",border:`1px solid #5DCAA5`,borderRadius:10,padding:"9px 12px",fontSize:12,fontFamily:"inherit",outline:"none",background:"#fff",color:C.text,appearance:"none"}}>
+                        <option value="unpaid">⏳ ยังไม่ชำระ</option>
+                        <option value="paid">✅ ชำระแล้ว</option>
+                        <option value="partial">💳 บางส่วน</option>
+                      </select>
+                    </div>
+                  </div>
+                  <div style={{marginBottom:8}}>
+                    <div style={{fontSize:12,color:C.muted,marginBottom:6}}>แนวโน้มปิด Upsell</div>
+                    <div style={{display:"flex",gap:6,flexWrap:"wrap"}}>
+                      {TRENDS.map(t=>(
+                        <button key={t.val} onClick={()=>setUpsellData({...upsellData,trend:t.val})}
+                          style={{border:`1px solid ${upsellData.trend===t.val?t.bc:C.bdr}`,borderRadius:8,padding:"6px 10px",fontSize:11,background:upsellData.trend===t.val?t.bg:"#fff",color:upsellData.trend===t.val?t.c:C.muted,cursor:"pointer",fontFamily:"inherit",fontWeight:upsellData.trend===t.val?700:400}}>
+                          {t.label}
+                        </button>
+                      ))}
+                    </div>
+                  </div>
+                  <div style={{marginBottom:8}}>
+                    <div style={{fontSize:12,color:C.muted,marginBottom:4}}>หมายเหตุ / รายละเอียด</div>
+                    <textarea value={upsellData.note} onChange={e=>setUpsellData({...upsellData,note:e.target.value})} placeholder="รายละเอียดเพิ่มเติม..."
+                      style={{width:"100%",border:`1px solid #5DCAA5`,borderRadius:10,padding:"9px 12px",fontSize:13,fontFamily:"inherit",outline:"none",background:"#fff",color:C.text,minHeight:60,resize:"vertical"}}/>
+                  </div>
+                  <div style={{display:"grid",gridTemplateColumns:"1fr 1fr",gap:8}}>
+                    <button onClick={()=>setShowUpsell(false)} style={{border:`1px solid ${C.bdr}`,borderRadius:10,padding:10,fontSize:12,color:C.muted,background:C.surf,cursor:"pointer",fontFamily:"inherit"}}>ยกเลิก</button>
+                    <button onClick={saveUpsell} disabled={saving} style={{border:"none",borderRadius:10,padding:10,fontSize:12,color:"#04342C",background:"#E1F5EE",cursor:"pointer",fontFamily:"inherit",fontWeight:700}}>{saving?"⏳...":"💾 บันทึก Upsell"}</button>
+                  </div>
+                </div>
+              )}
+            </div>
+
+            {/* ยอดรวม */}
+            <div style={{background:"#1E1B4B",padding:"12px 14px"}}>
+              <div style={{fontSize:10,color:"rgba(255,255,255,.4)",marginBottom:8}}>ยอดรวมลูกค้ารายนี้ · เซลล์: {sel.by||'-'}</div>
+              <div style={{display:"grid",gridTemplateColumns:"1fr 1fr 1fr",gap:8}}>
+                <div style={{background:"rgba(255,255,255,.08)",borderRadius:10,padding:10}}>
+                  <div style={{fontSize:10,color:"rgba(255,255,255,.4)",marginBottom:2}}>บริการหลัก</div>
+                  <div style={{fontSize:14,fontWeight:700,color:"#9FE1CB"}}>฿{mainRevenue.toLocaleString()}</div>
+                </div>
+                <div style={{background:"rgba(255,255,255,.08)",borderRadius:10,padding:10}}>
+                  <div style={{fontSize:10,color:"rgba(255,255,255,.4)",marginBottom:2}}>Upsell</div>
+                  <div style={{fontSize:14,fontWeight:700,color:"#AFA9EC"}}>฿{upsellRevenue.toLocaleString()}</div>
+                </div>
+                <div style={{background:"rgba(255,255,255,.08)",borderRadius:10,padding:10}}>
+                  <div style={{fontSize:10,color:"rgba(255,255,255,.4)",marginBottom:2}}>รวมทั้งหมด</div>
+                  <div style={{fontSize:14,fontWeight:700,color:"#fff"}}>฿{(mainRevenue+upsellRevenue).toLocaleString()}</div>
+                </div>
+              </div>
+            </div>
+
+            {/* Save button */}
+            {editing&&(
+              <div style={{padding:"12px 14px",borderTop:`1px solid ${C.bdr}`}}>
+                <button onClick={saveCust} disabled={saving} style={{width:"100%",background:"linear-gradient(135deg,#534AB7,#6C5CE7)",color:"#fff",border:"none",borderRadius:12,padding:12,fontSize:13,fontWeight:700,cursor:"pointer",fontFamily:"inherit"}}>
+                  {saving?"⏳ กำลังบันทึก...":"💾 บันทึกการแก้ไข"}
+                </button>
+              </div>
+            )}
+
+          </div>
+        )}
+      </div>
     </div>
   );
 }
@@ -1320,17 +1405,7 @@ function SecFormsView(){
 
 const API_URL = 'https://finovas-crm-production.up.railway.app';
 
-function mapCust(c){
-  return {
-    id:c.id, name:c.name||'', biz:c.biz||'',
-    type:c.cust_type||'monthly', svc:c.service||'',
-    status:c.status||'A', price:c.price||0,
-    src:c.source||'-', by:c.sales_by||'-',
-    paid:c.paid||false, docRisk:c.doc_risk==='high',
-    pipe:c.pipeline_status||'รอโทร',
-    bizType:c.biz_type||'', concern:c.concern||'',
-  };
-}
+
 
 export default function App(){
   const [tab,setTab]=useState("db");
