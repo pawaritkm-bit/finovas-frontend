@@ -62,6 +62,7 @@ body{font-family:-apple-system,BlinkMacSystemFont,'Segoe UI',Sarabun,sans-serif;
 .pay-btn.sel-paid{background:#E0FAF4;border-color:#00B894;color:#04342C;font-weight:700;}
 .pay-btn.sel-unpaid{background:#FFF8E1;border-color:#EF9F27;color:#412402;font-weight:700;}
 .pay-btn.sel-retro{background:#FFEAEA;border-color:#D63031;color:#501313;font-weight:700;}
+.pay-btn.sel-partial{background:#E8F4FD;border-color:#0984E3;color:#042C53;font-weight:700;}
 
 .retro-box{background:rgba(255,255,255,.8);border-radius:10px;padding:12px;border:1.5px solid #F09595;margin-top:10px;}
 .retro-title{font-size:11px;font-weight:700;color:#791F1F;margin-bottom:10px;}
@@ -114,6 +115,8 @@ body{font-family:-apple-system,BlinkMacSystemFont,'Segoe UI',Sarabun,sans-serif;
       <div class="section-label">👤 ข้อมูลลูกค้า</div>
       <div class="field"><label>ชื่อลูกค้า <span class="req">*</span></label><input type="text" id="name" placeholder="คุณ..."/></div>
       <div class="field"><label>ชื่อกิจการ</label><input type="text" id="biz" placeholder="บริษัท / ร้านค้า..."/></div>
+      <div class="field"><label>เบอร์ติดต่อ <span class="req">*</span></label><input type="tel" id="phone" placeholder="08X-XXX-XXXX"/></div>
+      <div class="field"><label>เบอร์ฉุกเฉิน</label><input type="tel" id="phone_emergency" placeholder="08X-XXX-XXXX (ถ้ามี)"/></div>
       <div class="field">
         <label>ประเภทธุรกิจ</label>
         <select id="bizTypeSelect" onchange="onBizTypeChange(this.value)">
@@ -277,6 +280,7 @@ function addService(){
     <div class="pay-group" id="pay-group-${id}">
       <button class="pay-btn" onclick="pickPay(${id},'free',this)">🎁 ฟรีเดือนแรก</button>
       <button class="pay-btn" onclick="pickPay(${id},'paid',this)">✅ ชำระแล้ว</button>
+      <button class="pay-btn" onclick="pickPay(${id},'partial',this)">💳 ชำระบางส่วน</button>
       <button class="pay-btn" onclick="pickPay(${id},'unpaid',this)">⏳ ยังไม่ชำระ</button>
       <button class="pay-btn" onclick="pickPay(${id},'retro',this)">📋 ทำย้อนหลัง</button>
     </div>
@@ -298,10 +302,14 @@ function addService(){
         <div id="retro-summary-${id}" class="retro-summary hidden"></div>
       </div>
     </div>
-    <div id="slip-box-${id}" class="hidden" style="margin-top:10px;background:rgba(255,255,255,.8);border-radius:10px;padding:12px;border:1.5px solid #00B894;">
-      <div style="font-size:11px;color:#0F6E56;font-weight:700;margin-bottom:8px;">📎 แนบสลิปโอนเงิน (ไม่บังคับ)</div>
-      <input type="file" id="slip-file-${id}" accept="image/*" style="width:100%;font-size:12px;color:#042C53;"/>
-      <div style="font-size:10px;color:#8B8BAD;margin-top:4px;">รองรับ JPG, PNG ขนาดไม่เกิน 5MB</div>
+    <div id="slip-box-${id}" class="hidden" style="margin-top:10px;background:#E0FAF4;border-radius:10px;padding:12px;border:1.5px solid #00B894;">
+      <div id="partial-amt-box-${id}" class="hidden" style="margin-bottom:10px;">
+        <div style="font-size:12px;color:#0F6E56;font-weight:700;margin-bottom:6px;">💳 ยอดที่ชำระมาแล้ว (บาท) <span style="color:#D63031;">*</span></div>
+        <input type="number" id="partial-amt-${id}" placeholder="เช่น 2,000" style="width:100%;font-size:13px;color:#042C53;background:#fff;border:1.5px solid #5DCAA5;border-radius:8px;padding:8px;"/>
+      </div>
+      <div style="font-size:12px;color:#0F6E56;font-weight:700;margin-bottom:8px;">📎 แนบสลิปโอนเงิน <span style="color:#D63031;">*</span></div>
+      <input type="file" id="slip-file-${id}" accept="image/*" style="width:100%;font-size:13px;color:#042C53;background:#fff;border:1.5px solid #5DCAA5;border-radius:8px;padding:8px;"/>
+      <div style="font-size:10px;color:#0F6E56;margin-top:4px;">กรุณาแนบสลิปยืนยันการชำระเงินค่ะ</div>
     </div>
   `;
   document.getElementById('svcList').appendChild(div);
@@ -321,9 +329,17 @@ function pickPay(id,val,el){
   const svc=document.getElementById(`svc-${id}`);
   const retroBox=document.getElementById(`retro-box-${id}`);
   const slipBox=document.getElementById(`slip-box-${id}`);
+  const partialBox=document.getElementById(`partial-amt-box-${id}`);
   if(val==='retro'){retroBox.classList.remove('hidden');svc.classList.add('retro');svc.style.background='#FFEAEA';svc.style.borderColor='#F09595';}
   else{retroBox.classList.add('hidden');svc.classList.remove('retro');const color=COLORS[(id-1)%COLORS.length];svc.style.background=color+'12';svc.style.borderColor=color+'80';}
-  if(slipBox){if(val==='paid')slipBox.classList.remove('hidden');else slipBox.classList.add('hidden');}
+  if(slipBox){
+    if(val==='paid'||val==='partial') slipBox.classList.remove('hidden');
+    else slipBox.classList.add('hidden');
+  }
+  if(partialBox){
+    if(val==='partial') partialBox.classList.remove('hidden');
+    else partialBox.classList.add('hidden');
+  }
   updateTotal();
 }
 
@@ -381,6 +397,34 @@ function nextStep(){
     step=2;
   } else if(step===2){
     if(services.length===0){alert('กรุณาเพิ่มบริการอย่างน้อย 1 รายการค่ะ');return;}
+    // ตรวจสอบว่าทุกบริการเลือกสถานะชำระแล้ว
+    let payError=false;
+    let slipError=false;
+    let partialError=false;
+    services.forEach(s=>{
+      const group=document.getElementById(`pay-group-${s.id}`);
+      const btns=group?group.querySelectorAll('.pay-btn'):[];
+      let hasPay=false;
+      let isPaid=false;
+      let isPartial=false;
+      btns.forEach(b=>{
+        if(b.classList.contains('sel-paid')||b.classList.contains('sel-free')||b.classList.contains('sel-unpaid')||b.classList.contains('sel-retro')||b.classList.contains('sel-partial')) hasPay=true;
+        if(b.classList.contains('sel-paid')) isPaid=true;
+        if(b.classList.contains('sel-partial')) isPartial=true;
+      });
+      if(!hasPay) payError=true;
+      if(isPaid||isPartial){
+        const slipFile=document.getElementById(`slip-file-${s.id}`);
+        if(!slipFile||!slipFile.files||slipFile.files.length===0) slipError=true;
+      }
+      if(isPartial){
+        const amt=document.getElementById(`partial-amt-${s.id}`)?.value;
+        if(!amt||parseInt(amt)<=0) partialError=true;
+      }
+    });
+    if(payError){alert('กรุณาเลือกสถานะชำระเงินทุกบริการค่ะ');return;}
+    if(partialError){alert('กรุณากรอกยอดที่ชำระมาแล้วสำหรับบริการที่ชำระบางส่วนค่ะ');return;}
+    if(slipError){alert('กรุณาแนบสลิปโอนเงินสำหรับบริการที่ชำระแล้ว/ไม่ครบค่ะ');return;}
     step=3;
   } else if(step===3){
     submitForm();return;
@@ -414,6 +458,7 @@ async function submitForm(){
       price:parseInt(document.getElementById(`svc-price-${s.id}`)?.value||0),
       type:document.getElementById(`svc-type-${s.id}`)?.value||'รายเดือน',
       pay:payVal,
+      partial_amount:parseInt(document.getElementById(`partial-amt-${s.id}`)?.value||0),
       retro_from:document.getElementById(`retro-from-${s.id}`)?.value||'',
       retro_to:document.getElementById(`retro-to-${s.id}`)?.value||'',
       retro_price:parseInt(document.getElementById(`retro-price-${s.id}`)?.value||0),
@@ -440,6 +485,7 @@ async function submitForm(){
         concern:document.getElementById('concern').value,
         promise:document.getElementById('promise').value,
         note:document.getElementById('note').value,
+        phone,phone_emergency,
         sales_by:salesBy,status:'B',source:'LIFF เซลล์',
         cust_type:custType,pipeline_status:'ลูกค้าปัจจุบัน',
         services:JSON.stringify(svcData),
