@@ -307,7 +307,7 @@ function addService(){
         <div style="font-size:12px;color:#0F6E56;font-weight:700;margin-bottom:6px;">💳 ยอดที่ชำระมาแล้ว (บาท) <span style="color:#D63031;">*</span></div>
         <input type="number" id="partial-amt-${id}" placeholder="เช่น 2,000" style="width:100%;font-size:13px;color:#042C53;background:#fff;border:1.5px solid #5DCAA5;border-radius:8px;padding:8px;"/>
       </div>
-      <div style="font-size:12px;color:#0F6E56;font-weight:700;margin-bottom:8px;">📎 แนบสลิปโอนเงิน <span style="color:#D63031;">*</span></div>
+      <div style="font-size:12px;color:#0F6E56;font-weight:700;margin-bottom:8px;">📎 แนบสลิปโอนเงิน (ไม่บังคับ)</div>
       <input type="file" id="slip-file-${id}" accept="image/*" style="width:100%;font-size:13px;color:#042C53;background:#fff;border:1.5px solid #5DCAA5;border-radius:8px;padding:8px;"/>
       <div style="font-size:10px;color:#0F6E56;margin-top:4px;">กรุณาแนบสลิปยืนยันการชำระเงินค่ะ</div>
     </div>
@@ -399,7 +399,6 @@ function nextStep(){
     if(services.length===0){alert('กรุณาเพิ่มบริการอย่างน้อย 1 รายการค่ะ');return;}
     // ตรวจสอบว่าทุกบริการเลือกสถานะชำระแล้ว
     let payError=false;
-    let slipError=false;
     let partialError=false;
     services.forEach(s=>{
       const group=document.getElementById(`pay-group-${s.id}`);
@@ -413,10 +412,7 @@ function nextStep(){
         if(b.classList.contains('sel-partial')) isPartial=true;
       });
       if(!hasPay) payError=true;
-      if(isPaid||isPartial){
-        const slipFile=document.getElementById(`slip-file-${s.id}`);
-        if(!slipFile||!slipFile.files||slipFile.files.length===0) slipError=true;
-      }
+      // slip is optional - can be added later
       if(isPartial){
         const amt=document.getElementById(`partial-amt-${s.id}`)?.value;
         if(!amt||parseInt(amt)<=0) partialError=true;
@@ -424,7 +420,7 @@ function nextStep(){
     });
     if(payError){alert('กรุณาเลือกสถานะชำระเงินทุกบริการค่ะ');return;}
     if(partialError){alert('กรุณากรอกยอดที่ชำระมาแล้วสำหรับบริการที่ชำระบางส่วนค่ะ');return;}
-    if(slipError){alert('กรุณาแนบสลิปโอนเงินสำหรับบริการที่ชำระแล้ว/ไม่ครบค่ะ');return;}
+
     step=3;
   } else if(step===3){
     submitForm();return;
