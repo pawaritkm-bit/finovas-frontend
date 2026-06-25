@@ -352,43 +352,50 @@ liff.init({ liffId: '2010493797-WgCFfbys' }).then(async () => {
 }).catch(e => console.log('LIFF error:', e));
 
 function prefillForm(c) {
-  // Tab รายเดือน
-  const mName = document.getElementById('m-name');
-  const mBiz  = document.getElementById('m-biz');
-  const mTel  = document.getElementById('m-tel');
-  const mSvc  = document.getElementById('m-service');
-  const mPrice= document.getElementById('m-price');
-  const mSender= document.getElementById('m-sender');
+  // เลือก tab อัตโนมัติตามบริการ
+  const svc = c.service || '';
+  let tabKey = 'monthly';
+  if (svc.includes('จด') || svc.includes('Holding') || svc.includes('ปิดบริษัท')) tabKey = 'company';
+  else if (svc.includes('ภาษี') || svc.includes('วีซ่า')) tabKey = 'annual';
+  
+  // Switch tab directly
+  ['monthly','company','annual'].forEach(t => {
+    const form = document.getElementById('form-'+t);
+    if (form) form.style.display = t === tabKey ? 'block' : 'none';
+  });
+  document.querySelectorAll('.type-tab').forEach((btn, i) => {
+    const keys = ['monthly','company','annual'];
+    btn.classList.toggle('active', keys[i] === tabKey);
+  });
+  curType = tabKey;
 
-  if (mName && c.name) mName.value = c.name;
-  if (mBiz && c.biz)   mBiz.value = c.biz;
-  if (mTel && c.phone) mTel.value = c.phone;
-  if (mSender && c.sales_by) mSender.value = c.sales_by;
-  if (mPrice && c.price) mPrice.value = c.price;
-  if (mSvc && c.service) {
-    [...mSvc.options].forEach(o => { if (o.text === c.service) o.selected = true; });
-  }
+  setTimeout(() => {
+    // Tab รายเดือน
+    const set = (id, val) => { const el = document.getElementById(id); if (el && val) el.value = val; };
+    set('m-name', c.name); set('m-biz', c.biz); set('m-tel', c.phone);
+    set('m-sender', c.sales_by); set('m-price', c.price);
+    set('m-account', c.id);
+    set('m-date', new Date().toISOString().split('T')[0]);
+    if (c.service) {
+      const mSvc = document.getElementById('m-service');
+      if (mSvc) [...mSvc.options].forEach(o => { if (o.text === c.service) o.selected = true; });
+    }
 
-  // Tab จดบริษัท
-  const cContact = document.getElementById('c-contact');
-  const cSender  = document.getElementById('c-sender');
-  if (cContact && c.name) cContact.value = c.name;
-  if (cSender && c.sales_by) cSender.value = c.sales_by;
+    // Tab จดบริษัท
+    set('c-contact', c.name); set('c-sender', c.sales_by);
 
-  // Tab ยื่นภาษี
-  const aTaxName = document.getElementById('a-name');
-  const aSender  = document.getElementById('a-sender');
-  const aLine    = document.getElementById('a-line');
-  if (aTaxName && c.name) aTaxName.value = c.name;
-  if (aSender && c.sales_by) aSender.value = c.sales_by;
-  if (aLine && c.social_id) aLine.value = c.social_id;
+    // Tab ยื่นภาษี
+    set('a-name', c.name); set('a-sender', c.sales_by);
+    set('a-line', c.social_id);
 
-  // แสดง banner แจ้งว่าดึงข้อมูลสำเร็จ
-  const banner = document.createElement('div');
-  banner.style.cssText = 'background:#E1F5EE;border:1.5px solid #5DCAA5;border-radius:10px;padding:10px 14px;margin:12px 16px 0;font-size:12px;color:#0F6E56;font-weight:600;';
-  banner.textContent = '✅ ดึงข้อมูลลูกค้าอัตโนมัติแล้วค่ะ กรุณาตรวจสอบและกรอกเพิ่มเติม';
-  document.querySelector('.type-tabs').insertAdjacentElement('afterend', banner);
-  setTimeout(() => banner.remove(), 5000);
+    // Banner แจ้ง
+    const banner = document.createElement('div');
+    banner.style.cssText = 'background:#E1F5EE;border:1.5px solid #5DCAA5;border-radius:10px;padding:10px 14px;margin:12px 16px 0;font-size:13px;color:#0F6E56;font-weight:600;';
+    banner.textContent = '✅ ดึงข้อมูลลูกค้าอัตโนมัติแล้วค่ะ กรุณาตรวจสอบและกรอกเพิ่มเติม';
+    const tabs = document.querySelector('.type-tabs');
+    if (tabs) tabs.insertAdjacentElement('afterend', banner);
+    setTimeout(() => banner.remove(), 6000);
+  }, 300);
 }
 
 function setType(t, el) {
