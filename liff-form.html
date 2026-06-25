@@ -7,47 +7,79 @@
 <script src="https://static.line-scdn.net/liff/edge/2/sdk.js"></script>
 <style>
 *{box-sizing:border-box;margin:0;padding:0;-webkit-tap-highlight-color:transparent}
-body{font-family:-apple-system,BlinkMacSystemFont,'Segoe UI',Sarabun,sans-serif;background:#F4F7FA;min-height:100vh;padding-bottom:80px}
-.header{background:#0D1B2A;color:#fff;padding:14px 16px;position:sticky;top:0;z-index:10;display:flex;align-items:center;gap:10px}
-.logo{width:32px;height:32px;background:#1D9E75;border-radius:8px;display:flex;align-items:center;justify-content:center;font-weight:900;font-size:14px;color:#0D1B2A;flex-shrink:0}
-.header-title{font-size:14px;font-weight:600}
-.header-sub{font-size:11px;color:#1D9E75;margin-top:2px}
-.step-bar{display:flex;gap:4px;padding:12px 16px 0;background:#fff;border-bottom:1px solid #E5E8EC}
-.step-seg{flex:1;height:3px;border-radius:2px;background:#E5E8EC;transition:background .3s;margin-bottom:10px}
-.step-seg.active{background:#06C755}
-.step-label{display:flex;padding:0 16px 10px;background:#fff;border-bottom:1px solid #E5E8EC}
-.step-label span{flex:1;font-size:10px;text-align:center;color:#9BA3AF;font-weight:500}
-.step-label span.active{color:#06C755}
-.section{padding:14px 16px 0}
-.section-label{font-size:11px;font-weight:600;color:#fff;background:#0D1B2A;border-radius:5px;padding:3px 10px;margin-bottom:10px;display:inline-block}
-.field{margin-bottom:12px}
-.field label{font-size:11px;font-weight:500;color:#6B7A8D;margin-bottom:4px;display:block}
-.field label .req{color:#A32D2D}
+body{font-family:-apple-system,BlinkMacSystemFont,'Segoe UI',Sarabun,sans-serif;background:#F0FAFE;min-height:100vh;padding-bottom:100px}
+
+.header{background:linear-gradient(135deg,#0984E3,#55EFC4);color:#fff;padding:16px 18px;position:sticky;top:0;z-index:10;display:flex;align-items:center;gap:12px;box-shadow:0 2px 8px rgba(9,132,227,.25)}
+.logo{width:38px;height:38px;background:rgba(255,255,255,.2);border-radius:10px;display:flex;align-items:center;justify-content:center;font-weight:900;font-size:16px;color:#fff;flex-shrink:0}
+.header-title{font-size:15px;font-weight:700}
+.header-sub{font-size:11px;color:rgba(255,255,255,.7);margin-top:2px}
+
+.step-bar{display:flex;gap:6px;padding:14px 16px 0;background:#fff}
+.step-seg{flex:1;height:4px;border-radius:2px;background:#E8F4FD;transition:background .3s;margin-bottom:10px}
+.step-seg.active{background:#0984E3}
+.step-label{display:flex;padding:0 16px 12px;background:#fff;border-bottom:1px solid #E8F4FD}
+.step-label span{flex:1;font-size:11px;text-align:center;color:#8B8BAD;font-weight:500}
+.step-label span.active{color:#0984E3;font-weight:700}
+
+.section{padding:16px 16px 0}
+.card{background:#fff;border-radius:16px;border:1px solid #B5D4F4;padding:16px;margin-bottom:14px;box-shadow:0 1px 4px rgba(9,132,227,.08)}
+.section-label{font-size:11px;font-weight:700;color:#fff;background:#0984E3;border-radius:6px;padding:4px 12px;margin-bottom:12px;display:inline-block;letter-spacing:.5px}
+
+.field{margin-bottom:14px}
+.field label{font-size:13px;font-weight:600;color:#042C53;margin-bottom:6px;display:block}
+.field label .req{color:#D63031}
 .field input[type=text],
 .field input[type=number],
 .field input[type=date],
+.field input[type=month],
 .field textarea,
-.field select{width:100%;border:1px solid #DDE1E8;border-radius:8px;padding:10px 12px;font-size:13px;font-family:inherit;outline:none;background:#fff;color:#0D1B2A;transition:border .2s;appearance:none;-webkit-appearance:none}
-.field input[type=date]{color:#0D1B2A}
-.field select{background-image:url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='12' height='8' viewBox='0 0 12 8'%3E%3Cpath d='M1 1l5 5 5-5' stroke='%236B7A8D' stroke-width='1.5' fill='none' stroke-linecap='round'/%3E%3C/svg%3E");background-repeat:no-repeat;background-position:right 12px center;padding-right:32px}
-.field input:focus,.field textarea:focus,.field select:focus{border-color:#06C755}
-.field textarea{resize:vertical;min-height:70px}
-.grid2{display:grid;grid-template-columns:1fr 1fr;gap:8px}
-.radio-group{display:flex;gap:6px;flex-wrap:wrap}
-.radio-btn{flex:1;min-width:80px;border:1px solid #DDE1E8;border-radius:8px;padding:8px 6px;font-size:12px;text-align:center;cursor:pointer;background:#fff;color:#6B7A8D;font-family:inherit;transition:all .2s}
-.radio-btn.selected{border-color:#06C755;background:#E8F5E9;color:#1B5E20;font-weight:500}
-.check-item{display:flex;align-items:flex-start;gap:8px;padding:9px 0;border-bottom:1px solid #F1F3F6;cursor:pointer}
+.field select{width:100%;border:1.5px solid #B5D4F4;border-radius:10px;padding:12px 14px;font-size:14px;font-family:inherit;outline:none;background:#fff;color:#042C53;transition:border .2s;appearance:none;-webkit-appearance:none}
+.field input:focus,.field textarea:focus,.field select:focus{border-color:#0984E3;box-shadow:0 0 0 3px rgba(9,132,227,.1)}
+.field select{background-image:url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='12' height='8' viewBox='0 0 12 8'%3E%3Cpath d='M1 1l5 5 5-5' stroke='%23185FA5' stroke-width='1.5' fill='none' stroke-linecap='round'/%3E%3C/svg%3E");background-repeat:no-repeat;background-position:right 14px center;padding-right:36px}
+.field textarea{resize:vertical;min-height:80px;line-height:1.6}
+.grid2{display:grid;grid-template-columns:1fr 1fr;gap:10px}
+
+.radio-group{display:flex;gap:8px;flex-wrap:wrap}
+.radio-btn{flex:1;min-width:80px;border:1.5px solid #B5D4F4;border-radius:10px;padding:11px 8px;font-size:13px;text-align:center;cursor:pointer;background:#fff;color:#185FA5;font-family:inherit;transition:all .2s;font-weight:500}
+.radio-btn.selected{border-color:#0984E3;background:#E8F4FD;color:#042C53;font-weight:700}
+
+.check-item{display:flex;align-items:center;gap:10px;padding:11px 0;border-bottom:1px solid #E8F4FD;cursor:pointer}
 .check-item:last-child{border-bottom:none}
-.check-item input[type=checkbox]{width:18px;height:18px;accent-color:#06C755;flex-shrink:0;margin-top:1px;cursor:pointer}
-.check-item span{font-size:12.5px;color:#374151;line-height:1.5}
-.footer{position:fixed;bottom:0;left:0;right:0;background:#fff;border-top:1px solid #E5E8EC;padding:12px 16px;display:flex;gap:8px;z-index:10}
-.btn-back{flex:1;background:#F4F7FA;color:#374151;border:1px solid #DDE1E8;border-radius:10px;padding:12px;font-family:inherit;font-size:13px;font-weight:500;cursor:pointer}
-.btn-next{flex:2;background:#06C755;color:#fff;border:none;border-radius:10px;padding:12px;font-family:inherit;font-size:13px;font-weight:600;cursor:pointer}
-.btn-next:disabled{background:#B0E5C1;cursor:not-allowed}
-.success{display:flex;flex-direction:column;align-items:center;justify-content:center;min-height:60vh;padding:32px 24px;text-align:center}
-.success-icon{font-size:64px;margin-bottom:16px}
-.success-title{font-size:20px;font-weight:700;color:#1D9E75;margin-bottom:8px}
-.success-sub{font-size:13px;color:#6B7A8D;line-height:1.6}
+.check-item input[type=checkbox]{width:20px;height:20px;accent-color:#0984E3;flex-shrink:0;cursor:pointer}
+.check-item span{font-size:13px;color:#042C53;line-height:1.5;font-weight:500}
+
+/* Service Items */
+.svc-item{border-radius:14px;padding:14px;margin-bottom:10px;border:1.5px solid #85B7EB;background:#E8F4FD;}
+.svc-item.retro{background:#FFEAEA;border-color:#F09595;}
+.svc-header{display:flex;align-items:center;gap:10px;margin-bottom:12px;}
+.svc-num{width:28px;height:28px;border-radius:8px;background:#0984E3;color:#fff;display:flex;align-items:center;justify-content:center;font-weight:800;font-size:13px;flex-shrink:0;}
+.svc-name-input{flex:1;border:1.5px solid #B5D4F4;border-radius:8px;padding:7px 10px;font-size:13px;font-family:inherit;outline:none;background:#fff;color:#042C53;}
+.del-btn{background:rgba(9,132,227,.1);border:none;border-radius:8px;width:30px;height:30px;cursor:pointer;color:#185FA5;font-size:14px;flex-shrink:0;}
+
+.pay-group{display:flex;gap:6px;flex-wrap:wrap;}
+.pay-btn{flex:1;min-width:60px;border:1.5px solid #B5D4F4;border-radius:8px;padding:9px 4px;font-size:11px;text-align:center;background:#fff;font-family:inherit;font-weight:500;cursor:pointer;color:#185FA5;transition:all .15s;}
+.pay-btn.sel-free{background:#EEEBff;border-color:#534AB7;color:#26215C;font-weight:700;}
+.pay-btn.sel-paid{background:#E0FAF4;border-color:#00B894;color:#04342C;font-weight:700;}
+.pay-btn.sel-unpaid{background:#FFF8E1;border-color:#EF9F27;color:#412402;font-weight:700;}
+.pay-btn.sel-retro{background:#FFEAEA;border-color:#D63031;color:#501313;font-weight:700;}
+
+.retro-box{background:rgba(255,255,255,.8);border-radius:10px;padding:12px;border:1.5px solid #F09595;margin-top:10px;}
+.retro-title{font-size:11px;font-weight:700;color:#791F1F;margin-bottom:10px;}
+.retro-summary{background:#FFEAEA;border-radius:8px;padding:8px 10px;margin-top:8px;font-size:11px;color:#791F1F;}
+
+.add-btn{width:100%;background:#E8F4FD;color:#0984E3;border:1.5px dashed #85B7EB;border-radius:12px;padding:13px;font-family:inherit;font-size:13px;font-weight:600;cursor:pointer;margin-bottom:12px;}
+
+.total-box{background:linear-gradient(135deg,#042C53,#0984E3);border-radius:14px;padding:14px 16px;}
+
+.footer{position:fixed;bottom:0;left:0;right:0;background:#fff;border-top:1px solid #E8F4FD;padding:14px 16px;display:flex;gap:10px;z-index:10;box-shadow:0 -2px 8px rgba(9,132,227,.1)}
+.btn-back{flex:1;background:#E8F4FD;color:#0984E3;border:1.5px solid #B5D4F4;border-radius:12px;padding:14px;font-family:inherit;font-size:14px;font-weight:600;cursor:pointer}
+.btn-next{flex:2;background:linear-gradient(135deg,#0984E3,#55EFC4);color:#fff;border:none;border-radius:12px;padding:14px;font-family:inherit;font-size:14px;font-weight:700;cursor:pointer;box-shadow:0 3px 10px rgba(9,132,227,.3)}
+.btn-next:disabled{background:#B5D4F4;box-shadow:none;cursor:not-allowed}
+
+.success{display:flex;flex-direction:column;align-items:center;justify-content:center;min-height:70vh;padding:32px 24px;text-align:center}
+.success-icon{font-size:72px;margin-bottom:20px}
+.success-title{font-size:22px;font-weight:800;color:#0984E3;margin-bottom:10px}
+.success-sub{font-size:14px;color:#185FA5;line-height:1.7}
 .hidden{display:none!important}
 </style>
 </head>
@@ -57,11 +89,11 @@ body{font-family:-apple-system,BlinkMacSystemFont,'Segoe UI',Sarabun,sans-serif;
   <div class="logo">F</div>
   <div>
     <div class="header-title">Finovas — บันทึกลูกค้าใหม่</div>
-    <div class="header-sub">กรอกข้อมูลหลังปิดการขาย</div>
+    <div class="header-sub">กรอกข้อมูลหลังปิดการขายค่ะ</div>
   </div>
 </div>
 
-<div style="background:#fff;border-bottom:1px solid #E5E8EC">
+<div style="background:#fff;border-bottom:1px solid #E8F4FD">
   <div class="step-bar">
     <div class="step-seg active" id="seg1"></div>
     <div class="step-seg" id="seg2"></div>
@@ -69,7 +101,7 @@ body{font-family:-apple-system,BlinkMacSystemFont,'Segoe UI',Sarabun,sans-serif;
   </div>
   <div class="step-label">
     <span class="active" id="lbl1">1. ข้อมูลลูกค้า</span>
-    <span id="lbl2">2. ธุรกิจ & ราคา</span>
+    <span id="lbl2">2. บริการ & ราคา</span>
     <span id="lbl3">3. รายละเอียด</span>
   </div>
 </div>
@@ -77,56 +109,63 @@ body{font-family:-apple-system,BlinkMacSystemFont,'Segoe UI',Sarabun,sans-serif;
 <!-- STEP 1 -->
 <div id="step1">
   <div class="section">
-    <div style="margin-top:4px"></div>
-    <div class="field"><label>ชื่อลูกค้า <span class="req">*</span></label><input type="text" id="name" placeholder="คุณ..."/></div>
-    <div class="field"><label>ชื่อกิจการ</label><input type="text" id="biz" placeholder="บริษัท / ร้านค้า..."/></div>
-
-    <div class="field">
-      <label>บริการ <span class="req">*</span></label>
-      <select id="svcSelect">
-        <option value="">-- เลือกบริการ --</option>
-        <option>บัญชีรายเดือนนิติบุคคล</option>
-        <option>บัญชีรายเดือนบุคคล</option>
-        <option>ปิดงบ (ผู้สอบบัญชี)</option>
-        <option>บัญชีภายใน</option>
-        <option>ออดิตตรวจนับคลัง</option>
-        <option>วางระบบบัญชี</option>
-        <option>ยื่นภาษีรายปี</option>
-        <option>จดบริษัท</option>
-        <option>จด หจก</option>
-        <option>ปิดบริษัท</option>
-        <option>ทำวีซ่า</option>
-        <option>รับเปิด Holding</option>
-      </select>
+    <div style="margin-top:8px"></div>
+    <div class="card">
+      <div class="section-label">👤 ข้อมูลลูกค้า</div>
+      <div class="field"><label>ชื่อลูกค้า <span class="req">*</span></label><input type="text" id="name" placeholder="คุณ..."/></div>
+      <div class="field"><label>ชื่อกิจการ</label><input type="text" id="biz" placeholder="บริษัท / ร้านค้า..."/></div>
+      <div class="field">
+        <label>ประเภทธุรกิจ</label>
+        <select id="bizTypeSelect" onchange="onBizTypeChange(this.value)">
+          <option value="">-- เลือกประเภท --</option>
+          <option>SME</option><option>บุคคลธรรมดา</option><option>บริษัทขนาดกลาง</option>
+          <option>ร้านค้าออนไลน์</option><option>ธุรกิจนำเข้า/ส่งออก</option>
+          <option>ธุรกิจบริการ</option><option>ธุรกิจอสังหาริมทรัพย์</option>
+          <option>ธุรกิจอาหาร/ร้านอาหาร</option><option>อินฟลูเอนเซอร์/ฟรีแลนซ์</option>
+          <option>อื่นๆ (ระบุ)</option>
+        </select>
+      </div>
+      <div class="field hidden" id="bizTypeOtherField">
+        <label>ระบุประเภทธุรกิจ</label>
+        <input type="text" id="bizTypeOther" placeholder="เช่น ธุรกิจซักรีด..."/>
+      </div>
+      <div class="field">
+        <label>VAT</label>
+        <div class="radio-group">
+          <button class="radio-btn" onclick="pickRadio(this,'vat','จดแล้ว')">จดแล้ว</button>
+          <button class="radio-btn" onclick="pickRadio(this,'vat','ยังไม่จด')">ยังไม่จด</button>
+          <button class="radio-btn" onclick="pickRadio(this,'vat','ไม่ทราบ')">ไม่ทราบ</button>
+        </div>
+      </div>
     </div>
-
-    <div class="field">
-      <label>ประเภทธุรกิจ</label>
-      <select id="bizTypeSelect" onchange="onBizTypeChange(this.value)">
-        <option value="">-- เลือกประเภท --</option>
-        <option>SME</option>
-        <option>บุคคลธรรมดา</option>
-        <option>บริษัทขนาดกลาง</option>
-        <option>ร้านค้าออนไลน์</option>
-        <option>ธุรกิจนำเข้า/ส่งออก</option>
-        <option>ธุรกิจบริการ</option>
-        <option>ธุรกิจอสังหาริมทรัพย์</option>
-        <option>ธุรกิจอาหาร/ร้านอาหาร</option>
-        <option>อินฟลูเอนเซอร์/ฟรีแลนซ์</option>
-        <option>อื่นๆ (ระบุ)</option>
-      </select>
-    </div>
-    <div class="field hidden" id="bizTypeOtherField">
-      <label>ระบุประเภทธุรกิจ</label>
-      <input type="text" id="bizTypeOther" placeholder="เช่น ธุรกิจซักรีด, ขายรถมือสอง..."/>
-    </div>
-
-    <div class="field">
-      <label>VAT</label>
-      <div class="radio-group">
-        <button class="radio-btn" onclick="pickRadio(this,'vat','จดแล้ว')">จดแล้ว</button>
-        <button class="radio-btn" onclick="pickRadio(this,'vat','ยังไม่จด')">ยังไม่จด</button>
-        <button class="radio-btn" onclick="pickRadio(this,'vat','ไม่ทราบ')">ไม่ทราบ</button>
+    <div class="card">
+      <div class="section-label">📋 ข้อมูลเพิ่มเติม</div>
+      <div class="grid2">
+        <div class="field"><label>วันเริ่มงาน</label><input type="date" id="startDate"/></div>
+        <div class="field"><label>จำนวนพนักงาน</label>
+          <select id="employees">
+            <option value="">-- เลือก --</option>
+            <option>1 คน</option><option>2-5 คน</option><option>6-10 คน</option>
+            <option>11-20 คน</option><option>21-50 คน</option><option>50+ คน</option>
+          </select>
+        </div>
+      </div>
+      <div class="grid2">
+        <div class="field"><label>รายได้/เดือน</label>
+          <select id="revenue">
+            <option value="">-- เลือก --</option>
+            <option>ต่ำกว่า 100,000</option><option>100,000-300,000</option>
+            <option>300,000-500,000</option><option>500,000-1,000,000</option>
+            <option>1,000,000-3,000,000</option><option>3,000,000+</option>
+          </select>
+        </div>
+        <div class="field"><label>เอกสาร/เดือน</label>
+          <select id="docCount">
+            <option value="">-- เลือก --</option>
+            <option>น้อยกว่า 20 รายการ</option><option>20-50 รายการ</option>
+            <option>50-100 รายการ</option><option>100-200 รายการ</option><option>200+ รายการ</option>
+          </select>
+        </div>
       </div>
     </div>
   </div>
@@ -135,63 +174,38 @@ body{font-family:-apple-system,BlinkMacSystemFont,'Segoe UI',Sarabun,sans-serif;
 <!-- STEP 2 -->
 <div id="step2" class="hidden">
   <div class="section">
-    <div style="margin-top:4px"></div>
-    <div class="grid2">
-      <div class="field">
-        <label>วันเริ่มงาน</label>
-        <input type="date" id="startDate"/>
-      </div>
-      <div class="field"><label>จำนวนพนักงาน</label>
-        <select id="employees">
-          <option value="">-- เลือก --</option>
-          <option>1 คน</option>
-          <option>2-5 คน</option>
-          <option>6-10 คน</option>
-          <option>11-20 คน</option>
-          <option>21-50 คน</option>
-          <option>50+ คน</option>
-        </select>
+    <div style="margin-top:8px"></div>
+    <div class="card">
+      <div class="section-label">🛠 บริการที่ปิดได้</div>
+      <div id="svcList"></div>
+      <button class="add-btn" onclick="addService()">+ เพิ่มบริการ</button>
+      <div class="total-box" id="totalBox">
+        <div style="display:flex;justify-content:space-between;align-items:center;margin-bottom:8px;">
+          <div style="color:rgba(255,255,255,.6);font-size:11px;">ยอดรวมทั้งหมด</div>
+          <div id="totalAmt" style="color:#55EFC4;font-weight:800;font-size:20px;">฿0</div>
+        </div>
+        <div id="totalTags" style="display:flex;gap:6px;flex-wrap:wrap;"></div>
       </div>
     </div>
-    <div class="grid2">
-      <div class="field"><label>รายได้/เดือน</label>
-        <select id="revenue">
-          <option value="">-- เลือก --</option>
-          <option>ต่ำกว่า 100,000</option>
-          <option>100,000-300,000</option>
-          <option>300,000-500,000</option>
-          <option>500,000-1,000,000</option>
-          <option>1,000,000-3,000,000</option>
-          <option>3,000,000+</option>
-        </select>
-      </div>
-      <div class="field"><label>เอกสาร/เดือน</label>
-        <select id="docCount">
-          <option value="">-- เลือก --</option>
-          <option>น้อยกว่า 20 รายการ</option>
-          <option>20-50 รายการ</option>
-          <option>50-100 รายการ</option>
-          <option>100-200 รายการ</option>
-          <option>200+ รายการ</option>
-        </select>
-      </div>
-    </div>
-    <div class="field"><label>ราคาที่ตกลง (บาท/เดือน) <span class="req">*</span></label><input type="number" id="price" placeholder="4000"/></div>
-
-    <div class="section-label" style="margin-top:4px">📂 เอกสารที่รับแล้ว</div>
-    <div id="docChecks"></div>
-    <div class="field" style="margin-top:10px"><label>เอกสารที่ยังขาด</label><input type="text" id="docsMissing" placeholder="(ถ้ามี)"/></div>
   </div>
 </div>
 
 <!-- STEP 3 -->
 <div id="step3" class="hidden">
   <div class="section">
-    <div style="margin-top:4px"></div>
-    <div class="field"><label>สิ่งที่ลูกค้ากังวล</label><textarea id="concern" placeholder="เช่น กลัวยื่นภาษีผิด..."></textarea></div>
-    <div class="field"><label>สิ่งที่เซลล์รับปากไว้</label><textarea id="promise" placeholder="- วางแผนภาษีฟรีตลอดปี&#10;- ปิดงบฟรี..." style="min-height:90px"></textarea></div>
-    <div class="field"><label>หมายเหตุเพิ่มเติม</label><textarea id="note" placeholder="ย้ายมาจากสำนักงานเดิม..."></textarea></div>
-    <div class="field"><label>เซลล์ผู้ปิด</label><input type="text" id="salesBy" placeholder="ชื่อเซลล์..."/></div>
+    <div style="margin-top:8px"></div>
+    <div class="card">
+      <div class="section-label">📂 เอกสาร</div>
+      <div id="docChecks"></div>
+      <div class="field" style="margin-top:10px"><label>เอกสารที่ยังขาด</label><input type="text" id="docsMissing" placeholder="(ถ้ามี)"/></div>
+    </div>
+    <div class="card">
+      <div class="section-label">📝 รายละเอียด</div>
+      <div class="field"><label>สิ่งที่ลูกค้ากังวล</label><textarea id="concern" placeholder="เช่น กลัวยื่นภาษีผิด..."></textarea></div>
+      <div class="field"><label>สิ่งที่เซลล์รับปากไว้</label><textarea id="promise" placeholder="- วางแผนภาษีฟรีทุกไตรมาส&#10;- ปิดงบฟรีปีแรก..." style="min-height:100px"></textarea></div>
+      <div class="field"><label>หมายเหตุ</label><textarea id="note" placeholder="ย้ายมาจากสำนักงานเดิม..."></textarea></div>
+      <div class="field"><label>เซลล์ผู้ปิด</label><input type="text" id="salesBy" placeholder="ชื่อเซลล์..."/></div>
+    </div>
   </div>
 </div>
 
@@ -200,7 +214,7 @@ body{font-family:-apple-system,BlinkMacSystemFont,'Segoe UI',Sarabun,sans-serif;
   <div class="success">
     <div class="success-icon">✅</div>
     <div class="success-title">บันทึกเรียบร้อยแล้วค่ะ!</div>
-    <div class="success-sub">ข้อมูลลูกค้าเข้า CRM แล้ว<br/>ส่งสรุปให้เลขาอัตโนมัติแล้วค่ะ 🙏<br/><br/>ปิดหน้าต่างนี้ได้เลยค่ะ</div>
+    <div class="success-sub">ข้อมูลลูกค้าเข้า CRM แล้วค่ะ<br/>ส่งสรุปให้เลขาอัตโนมัติแล้วค่ะ 🙏<br/><br/>ปิดหน้าต่างนี้ได้เลยค่ะ</div>
   </div>
 </div>
 
@@ -211,145 +225,229 @@ body{font-family:-apple-system,BlinkMacSystemFont,'Segoe UI',Sarabun,sans-serif;
 
 <script>
 const API = 'https://finovas-crm-production.up.railway.app';
-const DOCS = ["หนังสือรับรอง","ภ.พ.20","บัตรประชาชน","สำเนาทะเบียนพาณิชย์","งบการเงิน","เดินบัญชี"];
+const SVCS_LIST = ['บัญชีรายเดือนนิติบุคคล','บัญชีรายเดือนบุคคล','ปิดงบ (ผู้สอบบัญชี)','บัญชีภายใน','ออดิตตรวจนับคลัง','วางระบบบัญชี','ยื่นภาษีรายปี','จดบริษัท','จด หจก','ปิดบริษัท','ทำวีซ่า','รับเปิด Holding','อื่นๆ'];
+const DOCS = ['หนังสือรับรอง','ภ.พ.20','บัตรประชาชน','สำเนาทะเบียนพาณิชย์','งบการเงิน','เดินบัญชี'];
+const COLORS = ['#0984E3','#00B894','#534AB7','#EF9F27','#D63031','#185FA5'];
 
-let step = 1;
-let selVat = '';
-let selDocs = [];
-let displayName = 'เซลล์';
-const radios = {};
+let step=1, selDocs=[], displayName='เซลล์', services=[], svcCounter=0;
+const radios={};
 
-// Init LIFF
-liff.init({ liffId: '2010493797-cloQKQIm' }).then(async () => {
-  if (liff.isLoggedIn()) {
-    const profile = await liff.getProfile();
-    displayName = profile.displayName;
-    document.getElementById('salesBy').value = displayName;
+liff.init({liffId:'2010493797-cloQKQIm'}).then(async()=>{
+  if(liff.isLoggedIn()){const p=await liff.getProfile();displayName=p.displayName;document.getElementById('salesBy').value=displayName;}
+}).catch(e=>console.log('LIFF:',e));
+
+const docDiv=document.getElementById('docChecks');
+DOCS.forEach(d=>{const l=document.createElement('label');l.className='check-item';l.innerHTML=`<input type="checkbox" value="${d}" onchange="togDoc('${d}',this.checked)"/><span>${d}</span>`;docDiv.appendChild(l);});
+
+function togDoc(d,c){if(c)selDocs.push(d);else selDocs=selDocs.filter(x=>x!==d);}
+function pickRadio(el,g,v){el.closest('.radio-group').querySelectorAll('.radio-btn').forEach(b=>b.classList.remove('selected'));el.classList.add('selected');radios[g]=v;}
+function onBizTypeChange(v){document.getElementById('bizTypeOtherField').classList.toggle('hidden',v!=='อื่นๆ (ระบุ)');}
+function getBizType(){const s=document.getElementById('bizTypeSelect').value;return s==='อื่นๆ (ระบุ)'?document.getElementById('bizTypeOther').value.trim()||'อื่นๆ':s;}
+
+function addService(){
+  svcCounter++;
+  const id=svcCounter;
+  const color=COLORS[(id-1)%COLORS.length];
+  const div=document.createElement('div');
+  div.className='svc-item';
+  div.id=`svc-${id}`;
+  div.style.borderColor=color+'80';
+  div.style.background=color+'12';
+  div.innerHTML=`
+    <div class="svc-header">
+      <div class="svc-num" style="background:${color};">${id}</div>
+      <select class="svc-name-input" id="svc-name-${id}">
+        ${SVCS_LIST.map(s=>`<option>${s}</option>`).join('')}
+      </select>
+      <button class="del-btn" onclick="removeService(${id})">✕</button>
+    </div>
+    <div class="grid2" style="margin-bottom:10px;">
+      <div>
+        <div style="font-size:11px;color:#185FA5;font-weight:600;margin-bottom:5px;">ราคา (บาท)</div>
+        <input type="number" id="svc-price-${id}" class="field input" placeholder="4,000" style="border:1.5px solid #B5D4F4;border-radius:10px;padding:10px 12px;font-size:14px;font-family:inherit;width:100%;outline:none;background:#fff;color:#042C53;" oninput="updateTotal()"/>
+      </div>
+      <div>
+        <div style="font-size:11px;color:#185FA5;font-weight:600;margin-bottom:5px;">ประเภท</div>
+        <select id="svc-type-${id}" style="border:1.5px solid #B5D4F4;border-radius:10px;padding:10px 12px;font-size:13px;font-family:inherit;width:100%;outline:none;background:#fff;color:#042C53;appearance:none;">
+          <option>รายเดือน</option><option>ครั้งเดียว</option><option>รายปี</option>
+        </select>
+      </div>
+    </div>
+    <div style="font-size:11px;color:#185FA5;font-weight:600;margin-bottom:6px;">สถานะชำระเงิน</div>
+    <div class="pay-group" id="pay-group-${id}">
+      <button class="pay-btn" onclick="pickPay(${id},'free',this)">🎁 ฟรีเดือนแรก</button>
+      <button class="pay-btn" onclick="pickPay(${id},'paid',this)">✅ ชำระแล้ว</button>
+      <button class="pay-btn" onclick="pickPay(${id},'unpaid',this)">⏳ ยังไม่ชำระ</button>
+      <button class="pay-btn" onclick="pickPay(${id},'retro',this)">📋 ทำย้อนหลัง</button>
+    </div>
+    <div id="retro-box-${id}" class="hidden">
+      <div class="retro-box">
+        <div class="retro-title">📋 ระบุช่วงเวลาย้อนหลัง</div>
+        <div class="grid2">
+          <div>
+            <div style="font-size:11px;color:#791F1F;font-weight:600;margin-bottom:4px;">ตั้งแต่เดือน/ปี</div>
+            <input type="month" id="retro-from-${id}" style="border:1.5px solid #F09595;border-radius:10px;padding:10px 12px;font-size:13px;font-family:inherit;width:100%;outline:none;background:#fff;color:#501313;" oninput="updateRetroSummary(${id})"/>
+          </div>
+          <div>
+            <div style="font-size:11px;color:#791F1F;font-weight:600;margin-bottom:4px;">ถึงเดือน/ปี</div>
+            <input type="month" id="retro-to-${id}" style="border:1.5px solid #F09595;border-radius:10px;padding:10px 12px;font-size:13px;font-family:inherit;width:100%;outline:none;background:#fff;color:#501313;" oninput="updateRetroSummary(${id})"/>
+          </div>
+        </div>
+        <div style="font-size:11px;color:#791F1F;font-weight:600;margin-bottom:4px;margin-top:8px;">ราคาย้อนหลังรวม (บาท)</div>
+        <input type="number" id="retro-price-${id}" placeholder="เช่น 48,000" style="border:1.5px solid #F09595;border-radius:10px;padding:10px 12px;font-size:14px;font-family:inherit;width:100%;outline:none;background:#fff;color:#501313;" oninput="updateTotal()"/>
+        <div id="retro-summary-${id}" class="retro-summary hidden"></div>
+      </div>
+    </div>
+  `;
+  document.getElementById('svcList').appendChild(div);
+  services.push({id});
+  updateTotal();
+}
+
+function removeService(id){
+  document.getElementById(`svc-${id}`)?.remove();
+  services=services.filter(s=>s.id!==id);
+  updateTotal();
+}
+
+function pickPay(id,val,el){
+  document.getElementById(`pay-group-${id}`).querySelectorAll('.pay-btn').forEach(b=>{b.className='pay-btn';});
+  el.classList.add(`sel-${val}`);
+  const svc=document.getElementById(`svc-${id}`);
+  const retroBox=document.getElementById(`retro-box-${id}`);
+  if(val==='retro'){retroBox.classList.remove('hidden');svc.classList.add('retro');svc.style.background='#FFEAEA';svc.style.borderColor='#F09595';}
+  else{retroBox.classList.add('hidden');svc.classList.remove('retro');const color=COLORS[(id-1)%COLORS.length];svc.style.background=color+'12';svc.style.borderColor=color+'80';}
+  updateTotal();
+}
+
+function updateRetroSummary(id){
+  const from=document.getElementById(`retro-from-${id}`)?.value;
+  const to=document.getElementById(`retro-to-${id}`)?.value;
+  const summary=document.getElementById(`retro-summary-${id}`);
+  if(from&&to&&summary){
+    const f=new Date(from+'-01'),t=new Date(to+'-01');
+    const months=(t.getFullYear()-f.getFullYear())*12+(t.getMonth()-f.getMonth())+1;
+    if(months>0){summary.textContent=`📅 ย้อนหลัง ${months} เดือน (${from} — ${to})`;summary.classList.remove('hidden');}
+    else summary.classList.add('hidden');
   }
-}).catch(e => console.log('LIFF init error:', e));
-
-// Build doc checks
-const docDiv = document.getElementById('docChecks');
-DOCS.forEach(d => {
-  const item = document.createElement('label');
-  item.className = 'check-item';
-  const safe = d.replace(/'/g, "\\'");
-  item.innerHTML = `<input type="checkbox" value="${d}" onchange="togDoc('${safe}',this.checked)"/><span>${d}</span>`;
-  docDiv.appendChild(item);
-});
-
-function togDoc(d, checked) {
-  if (checked) selDocs.push(d);
-  else selDocs = selDocs.filter(x => x !== d);
 }
 
-function pickRadio(el, group, val) {
-  el.closest('.radio-group').querySelectorAll('.radio-btn').forEach(b => b.classList.remove('selected'));
-  el.classList.add('selected');
-  radios[group] = val;
-}
-
-function updateUI() {
-  [1,2,3].forEach(i => {
-    document.getElementById('step'+i).classList.toggle('hidden', step !== i);
-    document.getElementById('seg'+i).classList.toggle('active', step >= i);
-    document.getElementById('lbl'+i).classList.toggle('active', step === i);
+function updateTotal(){
+  let total=0;
+  const tags=[];
+  services.forEach(s=>{
+    const payBtn=document.querySelector(`#pay-group-${s.id} .pay-btn.sel-free,#pay-group-${s.id} .pay-btn.sel-paid,#pay-group-${s.id} .pay-btn.sel-unpaid,#pay-group-${s.id} .pay-btn.sel-retro`);
+    const payVal=payBtn?.classList.contains('sel-retro')?'retro':payBtn?.classList.contains('sel-paid')?'paid':payBtn?.classList.contains('sel-free')?'free':'unpaid';
+    const price=payVal==='retro'?parseInt(document.getElementById(`retro-price-${s.id}`)?.value||0):parseInt(document.getElementById(`svc-price-${s.id}`)?.value||0);
+    if(!isNaN(price))total+=price;
+    if(payVal==='free')tags.push('🎁 ฟรีเดือนแรก');
+    else if(payVal==='retro')tags.push('📋 ทำย้อนหลัง');
   });
-  document.getElementById('stepSuccess').classList.toggle('hidden', step !== 4);
-  document.getElementById('footer').classList.toggle('hidden', step === 4);
-  document.getElementById('btnBack').classList.toggle('hidden', step === 1);
-  document.getElementById('btnNext').textContent = step === 3 ? '💾 บันทึก + ส่งเลขา' : 'ถัดไป →';
-  window.scrollTo(0, 0);
+  document.getElementById('totalAmt').textContent=`฿${total.toLocaleString()}`;
+  const tagDiv=document.getElementById('totalTags');
+  const unique=[...new Set(tags)];
+  tagDiv.innerHTML=unique.map(t=>`<div style="background:rgba(255,255,255,.15);border-radius:6px;padding:4px 10px;font-size:10px;color:rgba(255,255,255,.8);">${t}</div>`).join('');
 }
 
-function nextStep() {
-  if (step === 1) {
-    if (!document.getElementById('name').value.trim()) { alert('กรุณากรอกชื่อลูกค้าค่ะ'); return; }
-    if (!document.getElementById('svcSelect').value) { alert('กรุณาเลือกบริการค่ะ'); return; }
-    step = 2;
-  } else if (step === 2) {
-    if (!document.getElementById('price').value) { alert('กรุณากรอกราคาค่ะ'); return; }
-    step = 3;
-  } else if (step === 3) {
-    submitForm(); return;
+function updateUI(){
+  [1,2,3].forEach(i=>{
+    document.getElementById('step'+i).classList.toggle('hidden',step!==i);
+    document.getElementById('seg'+i).classList.toggle('active',step>=i);
+    document.getElementById('lbl'+i).classList.toggle('active',step===i);
+  });
+  document.getElementById('stepSuccess').classList.toggle('hidden',step!==4);
+  document.getElementById('footer').classList.toggle('hidden',step===4);
+  document.getElementById('btnBack').classList.toggle('hidden',step===1);
+  document.getElementById('btnNext').textContent=step===3?'💾 บันทึก + ส่งเลขา':'ถัดไป →';
+  window.scrollTo(0,0);
+}
+
+function nextStep(){
+  if(step===1){
+    if(!document.getElementById('name').value.trim()){alert('กรุณากรอกชื่อลูกค้าค่ะ');return;}
+    step=2;
+  } else if(step===2){
+    if(services.length===0){alert('กรุณาเพิ่มบริการอย่างน้อย 1 รายการค่ะ');return;}
+    step=3;
+  } else if(step===3){
+    submitForm();return;
   }
   updateUI();
 }
+function prevStep(){if(step>1){step--;updateUI();}}
 
-function prevStep() {
-  if (step > 1) { step--; updateUI(); }
-}
+async function submitForm(){
+  const btn=document.getElementById('btnNext');
+  btn.textContent='⏳ กำลังบันทึก...';
+  btn.disabled=true;
 
-function onBizTypeChange(val) {
-  const otherField = document.getElementById('bizTypeOtherField');
-  if (val === 'อื่นๆ (ระบุ)') {
-    otherField.classList.remove('hidden');
-  } else {
-    otherField.classList.add('hidden');
-  }
-}
+  const name=document.getElementById('name').value.trim();
+  const biz=document.getElementById('biz').value.trim();
+  const bizType=getBizType();
+  const salesBy=document.getElementById('salesBy').value.trim()||displayName;
 
-function getBizType() {
-  const sel = document.getElementById('bizTypeSelect').value;
-  if (sel === 'อื่นๆ (ระบุ)') {
-    return document.getElementById('bizTypeOther').value.trim() || 'อื่นๆ';
-  }
-  return sel;
-}
+  // Collect services
+  const svcData=services.map(s=>{
+    const payBtn=document.querySelector(`#pay-group-${s.id} .pay-btn.sel-free,#pay-group-${s.id} .pay-btn.sel-paid,#pay-group-${s.id} .pay-btn.sel-unpaid,#pay-group-${s.id} .pay-btn.sel-retro`);
+    const payVal=payBtn?.classList.contains('sel-retro')?'retro':payBtn?.classList.contains('sel-paid')?'paid':payBtn?.classList.contains('sel-free')?'free':'unpaid';
+    return {
+      name:document.getElementById(`svc-name-${s.id}`)?.value||'',
+      price:parseInt(document.getElementById(`svc-price-${s.id}`)?.value||0),
+      type:document.getElementById(`svc-type-${s.id}`)?.value||'รายเดือน',
+      pay:payVal,
+      retro_from:document.getElementById(`retro-from-${s.id}`)?.value||'',
+      retro_to:document.getElementById(`retro-to-${s.id}`)?.value||'',
+      retro_price:parseInt(document.getElementById(`retro-price-${s.id}`)?.value||0),
+    };
+  });
 
-async function submitForm() {
-  const btn = document.getElementById('btnNext');
-  btn.textContent = '⏳ กำลังบันทึก...';
-  btn.disabled = true;
-
-  const name = document.getElementById('name').value.trim();
-  const biz = document.getElementById('biz').value.trim();
-  const svc = document.getElementById('svcSelect').value;
-  const bizType = getBizType();
-  const price = parseInt(document.getElementById('price').value) || 0;
-  const salesBy = document.getElementById('salesBy').value.trim() || displayName;
-  const startDate = document.getElementById('startDate').value;
+  const mainSvc=svcData[0]?.name||'';
+  const totalPrice=svcData.reduce((s,x)=>s+(x.pay==='retro'?x.retro_price:x.price),0);
+  const paid=svcData.some(x=>x.pay==='paid');
+  const custType=mainSvc.includes('จด')?'company':mainSvc.includes('ภาษี')?'annual':'monthly';
 
   try {
-    console.log('Submitting to:', API);
-    console.log('Data:', { name, biz, service: svc, price, sales_by: salesBy });
-    const res = await fetch(`${API}/api/customers`, {
-      method: 'POST',
-      headers: { 'Content-Type': 'application/json' },
-      body: JSON.stringify({
-        name, biz, service: svc, biz_type: bizType,
-        start_date: startDate,
-        vat: radios['vat'] || '',
-        revenue_est: document.getElementById('revenue').value,
-        doc_count_est: document.getElementById('docCount').value,
-        employees: document.getElementById('employees').value,
-        price, docs_ok: selDocs.length >= 2,
-        doc_risk: selDocs.length < 2 ? 'high' : 'none',
-        concern: document.getElementById('concern').value,
-        promise: document.getElementById('promise').value,
-        note: document.getElementById('note').value,
-        sales_by: salesBy, status: 'B', source: 'LIFF เซลล์',
-        cust_type: svc.includes('จด') ? 'company' : svc.includes('ภาษี') ? 'annual' : 'monthly',
-        pipeline_status: 'ลูกค้าปัจจุบัน',
+    const res=await fetch(`${API}/api/customers`,{
+      method:'POST',headers:{'Content-Type':'application/json'},
+      body:JSON.stringify({
+        name,biz,service:mainSvc,biz_type:bizType,
+        start_date:document.getElementById('startDate').value,
+        vat:radios['vat']||'',
+        revenue_est:document.getElementById('revenue').value,
+        doc_count_est:document.getElementById('docCount').value,
+        employees:document.getElementById('employees').value,
+        price:totalPrice,paid,docs_ok:selDocs.length>=2,
+        doc_risk:selDocs.length<2?'high':'none',
+        concern:document.getElementById('concern').value,
+        promise:document.getElementById('promise').value,
+        note:document.getElementById('note').value,
+        sales_by:salesBy,status:'B',source:'LIFF เซลล์',
+        cust_type:custType,pipeline_status:'ลูกค้าปัจจุบัน',
+        services:JSON.stringify(svcData),
       })
     });
-    const resData = await res.json();
-    console.log('Customer saved:', resData);
+    const data=await res.json();
+    console.log('Saved:',data);
 
-    await fetch(`${API}/api/ai/summarize-deal`, {
-      method: 'POST',
-      headers: { 'Content-Type': 'application/json' },
-      body: JSON.stringify({ name, biz, service: svc, price, sales_by: salesBy, concern: document.getElementById('concern').value, promise: document.getElementById('promise').value })
+    await fetch(`${API}/api/ai/summarize-deal`,{
+      method:'POST',headers:{'Content-Type':'application/json'},
+      body:JSON.stringify({name,biz,service:svcData.map(s=>s.name).join(', '),
+        price:totalPrice,paid,sales_by:salesBy,
+        services:svcData,
+        concern:document.getElementById('concern').value,
+        promise:document.getElementById('promise').value})
     });
 
-    step = 4; updateUI();
-  } catch (err) {
-    btn.textContent = '💾 บันทึก + ส่งเลขา';
-    btn.disabled = false;
-    alert('เกิดข้อผิดพลาด: ' + err.message);
+    step=4;updateUI();
+  } catch(err){
+    btn.textContent='💾 บันทึก + ส่งเลขา';
+    btn.disabled=false;
+    alert('เกิดข้อผิดพลาด: '+err.message);
   }
 }
 
+// Add one service by default
+addService();
 updateUI();
 </script>
 </body>
