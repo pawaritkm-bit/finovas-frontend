@@ -997,7 +997,7 @@ function CRMView({custs,setCusts}){
                         style={{width:"100%",border:`1px solid #5DCAA5`,borderRadius:10,padding:"9px 12px",fontSize:12,fontFamily:"inherit",outline:"none",background:"#fff",color:C.text,appearance:"none"}}>
                         <option value="unpaid">⏳ ยังไม่ชำระ</option>
                         <option value="paid">✅ ชำระแล้ว</option>
-                        <option value="partial">💳 บางส่วน</option>
+                        <option value="partial">💳 ชำระบางส่วน</option>
                       </select>
                     </div>
                   </div>
