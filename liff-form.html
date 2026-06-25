@@ -311,7 +311,9 @@ async function submitForm() {
   const startDate = document.getElementById('startDate').value;
 
   try {
-    await fetch(`${API}/api/customers`, {
+    console.log('Submitting to:', API);
+    console.log('Data:', { name, biz, service: svc, price, sales_by: salesBy });
+    const res = await fetch(`${API}/api/customers`, {
       method: 'POST',
       headers: { 'Content-Type': 'application/json' },
       body: JSON.stringify({
@@ -331,6 +333,8 @@ async function submitForm() {
         pipeline_status: 'ลูกค้าปัจจุบัน',
       })
     });
+    const resData = await res.json();
+    console.log('Customer saved:', resData);
 
     await fetch(`${API}/api/ai/summarize-deal`, {
       method: 'POST',
