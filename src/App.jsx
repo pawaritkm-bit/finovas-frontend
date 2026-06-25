@@ -763,6 +763,26 @@ function CRMView({custs,setCusts}){
               </button>
             </div>
 
+            <div style={{display:"grid",gridTemplateColumns:"1fr 1fr",gap:8,marginBottom:10}}>
+              <button onClick={()=>{
+                const newStatus = prompt("เปลี่ยนสถานะเป็น (A/B/C/D):", selected.status);
+                if(newStatus && ['A','B','C','D'].includes(newStatus.toUpperCase())) {
+                  upd(selected.id,{status:newStatus.toUpperCase()});
+                  fetch(`https://finovas-crm-production.up.railway.app/api/customers/${selected.id}`,{method:'PATCH',headers:{'Content-Type':'application/json'},body:JSON.stringify({status:newStatus.toUpperCase()})});
+                }
+              }} style={{background:"var(--color-background-secondary)",color:"var(--color-text-primary)",border:`1.5px solid ${C.bdr}`,borderRadius:10,padding:"10px",cursor:"pointer",fontFamily:"inherit",fontWeight:600,fontSize:13}}>
+                ✏️ แก้ไขสถานะ
+              </button>
+              <button onClick={()=>{
+                if(confirm(`ลบ ${selected.name} ออกจากระบบ?`)) {
+                  fetch(`https://finovas-crm-production.up.railway.app/api/customers/${selected.id}`,{method:'DELETE'})
+                    .then(()=>{ setCusts(p=>p.filter(c=>c.id!==selected.id)); setSel(null); });
+                }
+              }} style={{background:C.redBg,color:C.red,border:`1.5px solid ${C.red}`,borderRadius:10,padding:"10px",cursor:"pointer",fontFamily:"inherit",fontWeight:600,fontSize:13}}>
+                🗑️ ลบออกจากระบบ
+              </button>
+            </div>
+
             {selected.concern && (
               <div style={{background:C.amberBg,border:`1.5px solid ${C.amber}50`,borderRadius:12,padding:"12px 14px"}}>
                 <div style={{fontSize:12,fontWeight:700,color:C.amber,marginBottom:6}}>⚠️ สิ่งที่ลูกค้ากังวล</div>
@@ -777,8 +797,17 @@ function CRMView({custs,setCusts}){
 }
 
 // ── Dashboard View ────────────────────────────────────────────────────────────
-// ── Dashboard View ────────────────────────────────────────────────────────────
 function DashboardView({custs}){
+  const API = 'https://finovas-crm-production.up.railway.app';
+  const [ratings, setRatings] = React.useState([]);
+  const [docsChecked, setDocsChecked] = React.useState(0);
+
+  React.useEffect(()=>{
+    fetch(`${API}/api/ratings`).then(r=>r.json()).then(d=>setRatings(Array.isArray(d)?d:[])).catch(()=>{});
+    fetch(`${API}/api/documents`).then(r=>r.json()).then(d=>setDocsChecked((Array.isArray(d)?d:[]).filter(x=>x.status==='checked').length)).catch(()=>{});
+  },[]);
+
+  const avgScore = ratings.length ? (ratings.reduce((s,r)=>s+(r.score||0),0)/ratings.length).toFixed(1) : '-';
   const monthly=custs.filter(c=>c.type==="monthly"),company=custs.filter(c=>c.type==="company"),annual=custs.filter(c=>c.type==="annual");
   const rev=custs.filter(c=>c.paid).reduce((s,c)=>s+c.price,0);
   const docRisk=custs.filter(c=>c.docRisk),unpaid=custs.filter(c=>c.status==="B"&&!c.paid);
@@ -811,8 +840,12 @@ function DashboardView({custs}){
       </div>
       <div style={{display:"grid",gridTemplateColumns:"1fr 1fr",gap:8,marginBottom:10}}>
         <Card><CTitle>ประสิทธิภาพทีมบัญชี</CTitle>
-          {[{l:"ตอบกลับเฉลี่ย",v:"12 นาที",c:C.green},{l:"เอกสารตรวจแล้ว",v:"47 ไฟล์",c:C.teal},{l:"ความพึงพอใจ",v:"4.7/5",c:C.purple},{l:"ปัญหาที่พบบ่อย",v:"เอกสารไม่ครบ",c:C.amber}].map(i=>(
-            <div key={i.l} style={{display:"flex",justifyContent:"space-between",padding:"5px 0",borderBottom:`0.5px solid ${C.bdr}`,fontSize:11}}><span style={{color:C.muted}}>{i.l}</span><span style={{fontWeight:500,color:i.c}}>{i.v}</span></div>
+          {[
+            {l:"เอกสารตรวจแล้ว",v:`${docsChecked} ไฟล์`,c:C.teal},
+            {l:"คะแนนความพึงพอใจ",v:`${avgScore}/5`,c:C.purple},
+            {l:"จำนวนรีวิว",v:`${ratings.length} ครั้ง`,c:C.blue},
+          ].map(i=>(
+            <div key={i.l} style={{display:"flex",justifyContent:"space-between",padding:"8px 0",borderBottom:`0.5px solid ${C.bdr}`,fontSize:13}}><span style={{color:C.muted}}>{i.l}</span><span style={{fontWeight:600,color:i.c}}>{i.v}</span></div>
           ))}
         </Card>
         <Card><CTitle>ผลงานเซลล์</CTitle>
@@ -877,27 +910,129 @@ function PipelineView({custs}){
 
 // ── Sales Targets ─────────────────────────────────────────────────────────────
 function TargetsView(){
+  const API = 'https://finovas-crm-production.up.railway.app';
+  const [targets, setTargets] = React.useState([]);
+  const [custs, setCusts] = React.useState([]);
+  const [loading, setLoading] = React.useState(true);
+  const [showAdd, setShowAdd] = React.useState(false);
+  const [form, setForm] = React.useState({sales_name:'',target_type:'',target_value:''});
+
+  React.useEffect(()=>{
+    Promise.all([
+      fetch(`${API}/api/sales-targets`).then(r=>r.json()),
+      fetch(`${API}/api/customers`).then(r=>r.json()),
+    ]).then(([t,c])=>{
+      setTargets(Array.isArray(t)?t:[]);
+      setCusts(Array.isArray(c)?c:[]);
+      setLoading(false);
+    }).catch(()=>setLoading(false));
+  },[]);
+
+  const colors = ['#1D9E75','#534AB7','#185FA5','#BA7517','#A32D2D'];
+  const salesNames = [...new Set(targets.map(t=>t.sales_name))];
+
+  function getCurrent(salesName, targetType) {
+    const type = targetType.toLowerCase();
+    return custs.filter(c => c.by === salesName && (
+      (type.includes('รายเดือน') && c.type==='monthly') ||
+      (type.includes('จดบริษัท') || type.includes('หจก') && c.type==='company') ||
+      (type.includes('ภาษี') && c.type==='annual') ||
+      true
+    ) && c.status === 'B').length;
+  }
+
+  async function addTarget(){
+    if(!form.sales_name||!form.target_type||!form.target_value) return;
+    const res = await fetch(`${API}/api/sales-targets`,{
+      method:'POST', headers:{'Content-Type':'application/json'},
+      body: JSON.stringify({ sales_name:form.sales_name, target_type:form.target_type, target_value:parseInt(form.target_value), current_value:0, period:'monthly' })
+    });
+    const data = await res.json();
+    setTargets(p=>[...p, data]);
+    setForm({sales_name:'',target_type:'',target_value:''});
+    setShowAdd(false);
+  }
+
+  async function updateTarget(id, current_value){
+    await fetch(`${API}/api/sales-targets/${id}`,{
+      method:'PATCH', headers:{'Content-Type':'application/json'},
+      body: JSON.stringify({ current_value })
+    });
+    setTargets(p=>p.map(t=>t.id===id?{...t,current_value}:t));
+  }
+
+  if(loading) return <div style={{padding:32,textAlign:'center',color:C.muted}}>กำลังโหลด...</div>;
+
   return(
     <div style={{padding:12,overflowY:"auto",flex:1}}>
-      <div style={{fontSize:10,fontWeight:500,color:C.muted,marginBottom:8}}>เป้าหมายเซลล์ — วัดเป็นจำนวนลูกค้า</div>
+      <div style={{display:"flex",alignItems:"center",justifyContent:"space-between",marginBottom:12}}>
+        <div style={{fontSize:13,fontWeight:600,color:"var(--color-text-primary)"}}>เป้าหมายเซลล์</div>
+        <button onClick={()=>setShowAdd(!showAdd)} style={{background:C.teal,color:"#fff",border:"none",borderRadius:8,padding:"6px 14px",cursor:"pointer",fontFamily:"inherit",fontWeight:500,fontSize:12}}>
+          {showAdd?'ยกเลิก':'+ เพิ่มเป้า'}
+        </button>
+      </div>
+
+      {showAdd && (
+        <Card style={{marginBottom:14,background:C.tealBg,border:`1px solid ${C.teal}40`}}>
+          <CTitle>เพิ่มเป้าหมายใหม่</CTitle>
+          <div style={{display:"grid",gridTemplateColumns:"1fr 1fr 1fr",gap:8,marginBottom:8}}>
+            <div>
+              <div style={{fontSize:11,color:C.muted,marginBottom:4}}>ชื่อเซลล์</div>
+              <input value={form.sales_name} onChange={e=>setForm(f=>({...f,sales_name:e.target.value}))} placeholder="แมน / พิม"
+                style={{width:"100%",border:`1px solid ${C.bdr}`,borderRadius:8,padding:"8px 10px",fontSize:13,fontFamily:"inherit",outline:"none"}}/>
+            </div>
+            <div>
+              <div style={{fontSize:11,color:C.muted,marginBottom:4}}>ประเภทเป้า</div>
+              <input value={form.target_type} onChange={e=>setForm(f=>({...f,target_type:e.target.value}))} placeholder="บัญชีรายเดือน"
+                style={{width:"100%",border:`1px solid ${C.bdr}`,borderRadius:8,padding:"8px 10px",fontSize:13,fontFamily:"inherit",outline:"none"}}/>
+            </div>
+            <div>
+              <div style={{fontSize:11,color:C.muted,marginBottom:4}}>เป้า (ราย)</div>
+              <input type="number" value={form.target_value} onChange={e=>setForm(f=>({...f,target_value:e.target.value}))} placeholder="500"
+                style={{width:"100%",border:`1px solid ${C.bdr}`,borderRadius:8,padding:"8px 10px",fontSize:13,fontFamily:"inherit",outline:"none"}}/>
+            </div>
+          </div>
+          <button onClick={addTarget} style={{background:C.teal,color:"#fff",border:"none",borderRadius:8,padding:"9px 20px",cursor:"pointer",fontFamily:"inherit",fontWeight:500,fontSize:13}}>
+            บันทึกเป้า
+          </button>
+        </Card>
+      )}
+
+      {salesNames.length===0 && <Card><div style={{textAlign:"center",color:C.muted,padding:20}}>ยังไม่มีเป้าหมาย กด "+ เพิ่มเป้า" ได้เลยค่ะ</div></Card>}
+
       <div style={{display:"grid",gridTemplateColumns:"1fr 1fr",gap:10}}>
-        {SALESPEOPLE.map(sp=>{
-          const totT=sp.targets.reduce((s,t)=>s+t.t,0),totD=sp.targets.reduce((s,t)=>s+t.d,0);
+        {salesNames.map((name,ni)=>{
+          const myTargets = targets.filter(t=>t.sales_name===name);
+          const color = colors[ni % colors.length];
+          const totT = myTargets.reduce((s,t)=>s+(t.target_value||0),0);
+          const totD = myTargets.reduce((s,t)=>s+(t.current_value||0),0);
           return(
-            <Card key={sp.name}>
-              <div style={{display:"flex",alignItems:"center",gap:8,marginBottom:10}}>
-                <div style={{width:30,height:30,borderRadius:"50%",background:sp.c+"20",display:"flex",alignItems:"center",justifyContent:"center",fontWeight:500,color:sp.c,fontSize:13}}>{sp.name[0]}</div>
+            <Card key={name}>
+              <div style={{display:"flex",alignItems:"center",gap:8,marginBottom:12}}>
+                <div style={{width:36,height:36,borderRadius:"50%",background:color+"20",display:"flex",alignItems:"center",justifyContent:"center",fontWeight:700,color,fontSize:15}}>{name[0]}</div>
                 <div>
-                  <div style={{fontWeight:500,fontSize:13,color:"var(--color-text-primary)"}}>{sp.name}</div>
-                  <div style={{fontSize:10,color:sp.c}}>ภาพรวม {pct(totD,totT)}%</div>
+                  <div style={{fontWeight:700,fontSize:14,color:"var(--color-text-primary)"}}>{name}</div>
+                  <div style={{fontSize:11,color}}>ภาพรวม {pct(totD,totT)}%</div>
                 </div>
               </div>
-              {sp.targets.map(t=>{
-                const p=pct(t.d,t.t),c=p>=80?C.green:p>=50?C.amber:C.red;
+              {myTargets.map(t=>{
+                const d = t.current_value||0;
+                const tv = t.target_value||0;
+                const p = pct(d,tv);
+                const c = p>=80?C.green:p>=50?C.amber:C.red;
                 return(
-                  <div key={t.l} style={{marginBottom:9}}>
-                    <div style={{display:"flex",justifyContent:"space-between",fontSize:10,marginBottom:3}}><span style={{color:"var(--color-text-primary)"}}>{t.l}</span><span style={{color:c,fontWeight:500}}>{t.d}/{t.t} ราย ({p}%)</span></div>
-                    <div style={{height:6,background:"var(--color-background-secondary)",borderRadius:3,overflow:"hidden"}}><div style={{width:`${p}%`,height:"100%",background:c,borderRadius:3,transition:"width .3s"}}/></div>
+                  <div key={t.id} style={{marginBottom:10}}>
+                    <div style={{display:"flex",justifyContent:"space-between",fontSize:12,marginBottom:4}}>
+                      <span style={{color:"var(--color-text-primary)",fontWeight:500}}>{t.target_type}</span>
+                      <div style={{display:"flex",alignItems:"center",gap:6}}>
+                        <span style={{color:c,fontWeight:600}}>{d}/{tv} ราย ({p}%)</span>
+                        <input type="number" defaultValue={d} onBlur={e=>updateTarget(t.id,parseInt(e.target.value)||0)}
+                          style={{width:50,border:`1px solid ${C.bdr}`,borderRadius:6,padding:"2px 6px",fontSize:11,fontFamily:"inherit",outline:"none",textAlign:"center"}}/>
+                      </div>
+                    </div>
+                    <div style={{height:8,background:"var(--color-background-secondary)",borderRadius:4,overflow:"hidden"}}>
+                      <div style={{width:`${p}%`,height:"100%",background:c,borderRadius:4,transition:"width .3s"}}/>
+                    </div>
                   </div>
                 );
               })}
@@ -911,34 +1046,66 @@ function TargetsView(){
 
 // ── Churn View ────────────────────────────────────────────────────────────────
 function ChurnView(){
-  const reasons={};CHURN_DATA.forEach(c=>{reasons[c.reason]=(reasons[c.reason]||0)+1;});
+  const API = 'https://finovas-crm-production.up.railway.app';
+  const [churnList, setChurnList] = React.useState([]);
+  const [loading, setLoading] = React.useState(true);
+
+  React.useEffect(()=>{
+    fetch(`${API}/api/customers`)
+      .then(r=>r.json())
+      .then(data=>{
+        const churned = (Array.isArray(data)?data:[])
+          .filter(c=>c.status==='D')
+          .map(c=>({
+            name: c.name||'',
+            svc: c.service||c.svc||'-',
+            reason: c.churn_reason||'ไม่ระบุ',
+            month: c.updated_at ? new Date(c.updated_at).toLocaleDateString('th-TH',{month:'short'}) : '-',
+          }));
+        setChurnList(churned);
+        setLoading(false);
+      }).catch(()=>setLoading(false));
+  },[]);
+
+  const reasons={};
+  churnList.forEach(c=>{reasons[c.reason]=(reasons[c.reason]||0)+1;});
+
+  if(loading) return <div style={{padding:32,textAlign:"center",color:C.muted}}>กำลังโหลด...</div>;
+
   return(
     <div style={{padding:12,overflowY:"auto",flex:1}}>
-      <div style={{fontSize:10,fontWeight:500,color:C.muted,marginBottom:8}}>วิเคราะห์สาเหตุลูกค้าออก</div>
-      <Card>
-        <CTitle>สาเหตุหลัก</CTitle>
-        {Object.entries(reasons).sort((a,b)=>b[1]-a[1]).map(([r,n])=><BarRow key={r} label={r} val={n} total={CHURN_DATA.length} color={C.red} lw={80}/>)}
-      </Card>
-      <Card>
-        <CTitle>รายละเอียด</CTitle>
-        <table style={{width:"100%",borderCollapse:"collapse",fontSize:11,tableLayout:"fixed"}}>
-          <thead>
-            <tr style={{borderBottom:`0.5px solid ${C.bdr}`}}>
-              {["ชื่อ","บริการ","สาเหตุ","เดือน"].map(h=><th key={h} style={{padding:"5px 7px",textAlign:"left",fontSize:10,fontWeight:500,color:C.muted}}>{h}</th>)}
-            </tr>
-          </thead>
-          <tbody>
-            {CHURN_DATA.map((c,i)=>(
-              <tr key={i} style={{borderBottom:`0.5px solid ${C.bdr}`}}>
-                <td style={{padding:"6px 7px",fontWeight:500,color:"var(--color-text-primary)"}}>{c.name}</td>
-                <td style={{padding:"6px 7px",color:C.muted,fontSize:10}}>{c.svc}</td>
-                <td style={{padding:"6px 7px"}}><Pill c={C.red} bg={C.redBg}>{c.reason}</Pill></td>
-                <td style={{padding:"6px 7px",color:C.muted}}>{c.month}</td>
+      <div style={{fontSize:13,fontWeight:600,color:"var(--color-text-primary)",marginBottom:12}}>วิเคราะห์สาเหตุลูกค้าออก</div>
+      {churnList.length===0 && <Card><div style={{textAlign:"center",color:C.muted,padding:20}}>ยังไม่มีลูกค้าที่ออกไปค่ะ 🎉</div></Card>}
+      {Object.keys(reasons).length>0 && (
+        <Card>
+          <CTitle>สาเหตุหลัก</CTitle>
+          {Object.entries(reasons).sort((a,b)=>b[1]-a[1]).map(([r,n])=><BarRow key={r} label={r} val={n} total={churnList.length} color={C.red} lw={80}/>)}
+        </Card>
+      )}
+      {churnList.length>0 && (
+        <Card>
+          <CTitle>รายละเอียด ({churnList.length} ราย)</CTitle>
+          <table style={{width:"100%",borderCollapse:"collapse",fontSize:13,tableLayout:"fixed"}}>
+            <thead>
+              <tr style={{borderBottom:`1px solid ${C.bdr}`,background:"var(--color-background-secondary)"}}>
+                {["ชื่อ","บริการ","สาเหตุ","เดือน"].map(h=>(
+                  <th key={h} style={{padding:"8px 10px",textAlign:"left",fontSize:12,fontWeight:600,color:C.muted}}>{h}</th>
+                ))}
               </tr>
-            ))}
-          </tbody>
-        </table>
-      </Card>
+            </thead>
+            <tbody>
+              {churnList.map((c,i)=>(
+                <tr key={i} style={{borderBottom:`0.5px solid ${C.bdr}`,background:i%2===0?"var(--color-background-primary)":"var(--color-background-secondary)"}}>
+                  <td style={{padding:"10px 10px",fontWeight:600,color:"var(--color-text-primary)",fontSize:13}}>{c.name}</td>
+                  <td style={{padding:"10px 10px",color:C.muted,fontSize:12}}>{c.svc}</td>
+                  <td style={{padding:"10px 10px"}}><Pill c={C.red} bg={C.redBg}>{c.reason}</Pill></td>
+                  <td style={{padding:"10px 10px",color:C.muted,fontSize:12}}>{c.month}</td>
+                </tr>
+              ))}
+            </tbody>
+          </table>
+        </Card>
+      )}
     </div>
   );
 }
