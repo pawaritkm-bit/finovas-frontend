@@ -88,12 +88,19 @@ const pct = (d,t) => t ? Math.min(100,Math.round(d/t*100)) : 0;
 
 // ── Base UI components ────────────────────────────────────────────────────────
 function Pill({children,c,bg,style={}}){
-  return <span style={{background:bg,color:c,borderRadius:20,padding:"4px 12px",fontSize:12,fontWeight:600,whiteSpace:"nowrap",display:"inline-block",...style}}>{children}</span>;
+  return <span style={{background:bg,color:c,borderRadius:20,padding:"2px 10px",fontSize:10,fontWeight:600,whiteSpace:"nowrap",display:"inline-block",letterSpacing:.2,...style}}>{children}</span>;
 }
 function Card({children,style={}}){
-  return <div style={{background:C.white,borderRadius:16,border:`1px solid ${C.bdr}`,padding:18,marginBottom:14,boxShadow:"0 1px 4px rgba(0,0,0,0.06)",...style}}>{children}</div>;
+  return <div style={{background:C.white,borderRadius:16,border:`1px solid ${C.bdr}`,padding:18,marginBottom:12,boxShadow:"0 1px 4px rgba(108,92,231,.06)",...style}}>{children}</div>;
 }
-function CTitle({children}){ return <div style={{fontSize:15,fontWeight:700,color:"var(--color-text-primary)",marginBottom:12,paddingBottom:8,borderBottom:`2px solid ${C.teal}20`}}>{children}</div>; }
+function CTitle({children,sub}){
+  return(
+    <div style={{marginBottom:12}}>
+      <div style={{fontSize:13,fontWeight:700,color:C.text}}>{children}</div>
+      {sub && <div style={{fontSize:11,color:C.muted,marginTop:2}}>{sub}</div>}
+    </div>
+  );
+}
 function BarRow({label,val,total,color,lw=80}){
   return(
     <div style={{display:"flex",alignItems:"center",gap:8,marginBottom:6}}>
@@ -601,15 +608,15 @@ function CRMView({custs,setCusts}){
       {/* Search + Filter bar */}
       <div style={{padding:"12px 16px",background:"var(--color-background-primary)",borderBottom:`1.5px solid ${C.bdr}`,display:"flex",gap:8,flexWrap:"wrap",alignItems:"center",flexShrink:0}}>
         <div style={{position:"relative",flex:1,minWidth:120}}>
-          <span style={{position:"absolute",left:10,top:"50%",transform:"translateY(-50%)",fontSize:14,color:C.muted}}>🔍</span>
+          <span style={{position:"absolute",left:10,top:"50%",transform:"translateY(-50%)",fontSize:14,color:C.muted,fontSize:14}}>🔍</span>
           <input value={search} onChange={e=>setSearch(e.target.value)} placeholder="ค้นหาชื่อหรือกิจการ..."
-            style={{width:"100%",border:`1.5px solid ${C.bdr}`,borderRadius:10,padding:"9px 10px 9px 32px",fontSize:13,fontFamily:"inherit",outline:"none",background:"var(--color-background-secondary)"}}/>
+            style={{width:"100%",border:`1.5px solid ${C.bdr}`,borderRadius:10,padding:"9px 10px 9px 32px",fontSize:13,fontFamily:"inherit",outline:"none",background:C.surf}}/>
         </div>
-        <select value={fType} onChange={e=>setFType(e.target.value)} style={{border:`1.5px solid ${C.bdr}`,borderRadius:10,padding:"9px 10px",fontSize:13,fontFamily:"inherit",background:"var(--color-background-secondary)"}}>
+        <select value={fType} onChange={e=>setFType(e.target.value)} style={{border:`1.5px solid ${C.bdr}`,borderRadius:10,padding:"9px 10px",fontSize:13,fontFamily:"inherit",background:C.surf}}>
           <option value="">ทุกประเภท</option>
           {Object.entries(TM).map(([k,v])=><option key={k} value={k}>{v.l}</option>)}
         </select>
-        <select value={fStatus} onChange={e=>setFStatus(e.target.value)} style={{border:`1.5px solid ${C.bdr}`,borderRadius:10,padding:"9px 10px",fontSize:13,fontFamily:"inherit",background:"var(--color-background-secondary)"}}>
+        <select value={fStatus} onChange={e=>setFStatus(e.target.value)} style={{border:`1.5px solid ${C.bdr}`,borderRadius:10,padding:"9px 10px",fontSize:13,fontFamily:"inherit",background:C.surf}}>
           <option value="">ทุกสถานะ</option>
           {Object.entries(SM).map(([k,v])=><option key={k} value={k}>{v.l}</option>)}
         </select>
@@ -638,7 +645,7 @@ function CRMView({custs,setCusts}){
                 return(
                   <tr key={c.id} onClick={()=>setSel(isSelected?null:c)}
                     style={{background:isSelected?`${C.teal}12`:i%2===0?"var(--color-background-primary)":"var(--color-background-secondary)",
-                      borderLeft:isSelected?`4px solid ${C.teal}`:"4px solid transparent",
+                      borderLeft:isSelected?`4px solid #6C5CE7`:"4px solid transparent",
                       cursor:"pointer",borderBottom:`1px solid ${C.bdr}`,transition:"background .15s"}}>
                     <td style={{padding:"12px 12px"}}>
                       <div style={{display:"flex",alignItems:"center",gap:8}}>
@@ -677,11 +684,11 @@ function CRMView({custs,setCusts}){
             return(
               <div key={c.id} onClick={()=>setSel(isSelected?null:c)}
                 style={{padding:"14px 16px",borderBottom:`1.5px solid ${C.bdr}`,cursor:"pointer",
-                  background:isSelected?`${C.teal}12`:"var(--color-background-primary)",
-                  borderLeft:isSelected?`4px solid ${C.teal}`:"4px solid transparent",
+                  background:isSelected?"#EEEBff":C.white,
+                  borderLeft:isSelected?`4px solid #6C5CE7`:"4px solid transparent",
                   transition:"background .15s"}}>
                 <div style={{display:"flex",alignItems:"center",gap:8,marginBottom:6}}>
-                  <div style={{width:38,height:38,borderRadius:"50%",background:`${C.teal}20`,display:"flex",alignItems:"center",justifyContent:"center",fontWeight:700,fontSize:14,color:C.teal,flexShrink:0}}>
+                  <div style={{width:38,height:38,borderRadius:"50%",background:"#EEEBff",display:"flex",alignItems:"center",justifyContent:"center",fontWeight:700,fontSize:14,color:"#6C5CE7",flexShrink:0}}>
                     {c.name.replace('คุณ','').trim()[0]||'?'}
                   </div>
                   <div style={{flex:1,minWidth:0}}>
@@ -708,7 +715,7 @@ function CRMView({custs,setCusts}){
 
       {/* Detail panel — bottom sheet style */}
       {selected && (
-        <div style={{borderTop:`2px solid ${C.teal}`,background:"var(--color-background-primary)",maxHeight:"55%",overflowY:"auto",flexShrink:0}}>
+        <div style={{borderTop:`2px solid #6C5CE7`,background:"var(--color-background-primary)",maxHeight:"55%",overflowY:"auto",flexShrink:0}}>
           {/* Header */}
           <div style={{padding:"12px 16px",display:"flex",alignItems:"center",gap:10,borderBottom:`1px solid ${C.bdr}`,position:"sticky",top:0,background:"var(--color-background-primary)",zIndex:2}}>
             <div style={{width:42,height:42,borderRadius:"50%",background:`${C.teal}20`,display:"flex",alignItems:"center",justifyContent:"center",fontWeight:700,fontSize:16,color:C.teal,flexShrink:0}}>
@@ -738,7 +745,7 @@ function CRMView({custs,setCusts}){
               <div style={{display:"flex",gap:6,flexWrap:"wrap"}}>
                 {Object.entries(SM).map(([k,v])=>(
                   <button key={k} onClick={()=>upd(selected.id,{status:k})}
-                    style={{background:selected.status===k?v.bg:"var(--color-background-secondary)",color:selected.status===k?v.c:C.muted,
+                    style={{background:selected.status===k?v.bg:C.surf,color:selected.status===k?v.c:C.muted,
                       border:`1.5px solid ${selected.status===k?v.c:C.bdr}`,borderRadius:20,padding:"6px 14px",
                       cursor:"pointer",fontSize:12,fontWeight:600,fontFamily:"inherit",transition:"all .15s"}}>
                     {v.l}
@@ -807,78 +814,168 @@ function DashboardView({custs}){
     fetch(`${API}/api/documents`).then(r=>r.json()).then(d=>setDocsChecked((Array.isArray(d)?d:[]).filter(x=>x.status==='checked').length)).catch(()=>{});
   },[]);
 
-  const avgScore = ratings.length ? (ratings.reduce((s,r)=>s+(r.score||0),0)/ratings.length).toFixed(1) : '-';
-  const monthly=custs.filter(c=>c.type==="monthly"),company=custs.filter(c=>c.type==="company"),annual=custs.filter(c=>c.type==="annual");
+  const avgScore = ratings.length?(ratings.reduce((s,r)=>s+(r.score||0),0)/ratings.length).toFixed(1):'-';
+  const monthly=custs.filter(c=>c.type==="monthly");
+  const company=custs.filter(c=>c.type==="company");
+  const annual=custs.filter(c=>c.type==="annual");
   const rev=custs.filter(c=>c.paid).reduce((s,c)=>s+c.price,0);
-  const docRisk=custs.filter(c=>c.docRisk),unpaid=custs.filter(c=>c.status==="B"&&!c.paid);
-  const sources={};custs.forEach(c=>{sources[c.src]=(sources[c.src]||0)+1;});
+  const docRisk=custs.filter(c=>c.docRisk);
+  const unpaid=custs.filter(c=>c.status==="B"&&!c.paid);
+  const sources={};custs.forEach(c=>{if(c.src&&c.src!=='-')sources[c.src]=(sources[c.src]||0)+1;});
+  const salesNames=[...new Set(custs.map(c=>c.by).filter(b=>b&&b!=='-'))];
+  const salesColors=["#6C5CE7","#00B894","#0984E3","#FDCB6E"];
+  const salesBgs=["#EEEBff","#E0FAF4","#E8F4FD","#FFF8E1"];
+
   return(
-    <div style={{padding:16,overflowY:"auto",flex:1}}>
-      <div style={{display:"grid",gridTemplateColumns:"repeat(4,1fr)",gap:8,marginBottom:10}}>
-        {[{v:custs.length,l:"ลูกค้าทั้งหมด",c:C.teal},{v:`฿${rev.toLocaleString()}`,l:"รายได้/เดือน",c:C.green},{v:docRisk.length,l:"เอกสารค้าง",c:C.red},{v:unpaid.length,l:"ยังไม่ชำระ",c:C.amber}].map(k=>(
-          <div key={k.l} style={{background:"var(--color-background-secondary)",borderRadius:8,padding:"11px 12px"}}>
-            <div style={{fontSize:k.v.toString().length>5?16:24,fontWeight:700,color:k.c,marginBottom:4}}>{k.v}</div>
-            <div style={{fontSize:12,color:C.muted,fontWeight:500}}>{k.l}</div>
+    <div style={{padding:16,overflowY:"auto",flex:1,background:"#F4F3FF"}}>
+
+      {/* KPI 4 กล่อง */}
+      <div style={{display:"grid",gridTemplateColumns:"1fr 1fr",gap:10,marginBottom:14}}>
+        {[
+          {icon:"👥",label:"ลูกค้าทั้งหมด",val:custs.length,sub:`${monthly.length} รายเดือน`,bg:"linear-gradient(135deg,#AFA9EC,#EEEBff)",tc:"#26215C",sc:"#534AB7",mc:"#7F77DD"},
+          {icon:"💰",label:"รายได้/เดือน",val:`฿${rev.toLocaleString()}`,sub:"ชำระแล้วทั้งหมด",bg:"linear-gradient(135deg,#5DCAA5,#E1F5EE)",tc:"#04342C",sc:"#0F6E56",mc:"#1D9E75"},
+          {icon:"⏳",label:"ยังไม่ชำระ",val:unpaid.length,sub:"ลูกค้าปัจจุบัน",bg:"linear-gradient(135deg,#EF9F27,#FAEEDA)",tc:"#412402",sc:"#633806",mc:"#854F0B"},
+          {icon:"📄",label:"เอกสารค้าง",val:docRisk.length,sub:"ต้องติดตามด่วน",bg:"linear-gradient(135deg,#F09595,#FCEBEB)",tc:"#501313",sc:"#791F1F",mc:"#A32D2D"},
+        ].map(k=>(
+          <div key={k.label} style={{background:k.bg,borderRadius:16,padding:"18px",position:"relative",overflow:"hidden"}}>
+            <div style={{position:"absolute",width:60,height:60,top:-15,right:-15,borderRadius:"50%",background:"rgba(255,255,255,.5)"}}/>
+            <div style={{fontSize:22,marginBottom:6}}>{k.icon}</div>
+            <div style={{fontSize:28,fontWeight:800,color:k.tc,lineHeight:1}}>{k.val}</div>
+            <div style={{fontSize:11,color:k.sc,marginTop:4,fontWeight:600}}>{k.label}</div>
+            <div style={{fontSize:10,color:k.mc,marginTop:2}}>{k.sub}</div>
           </div>
         ))}
       </div>
-      <div style={{display:"grid",gridTemplateColumns:"repeat(3,1fr)",gap:8,marginBottom:10}}>
-        {[{data:monthly,k:"monthly"},{data:company,k:"company"},{data:annual,k:"annual"}].map(({data,k})=>{
-          const t=TM[k],r=data.filter(c=>c.paid).reduce((s,c)=>s+c.price,0);
+
+      {/* รายเดือน จดบริษัท ยื่นภาษี */}
+      <div style={{display:"grid",gridTemplateColumns:"1fr 1fr 1fr",gap:8,marginBottom:14}}>
+        <div style={{background:"#EEEBff",borderRadius:14,padding:"14px 10px",borderTop:"3px solid #6C5CE7",textAlign:"center"}}>
+          <div style={{fontSize:20,marginBottom:4}}>📅</div>
+          <div style={{fontSize:24,fontWeight:800,color:"#6C5CE7"}}>{monthly.length}</div>
+          <div style={{fontSize:10,color:"#8B8BAD",marginTop:3}}>รายเดือน</div>
+        </div>
+        <div style={{background:"#E8F4FD",borderRadius:14,padding:"14px 10px",borderTop:"3px solid #0984E3",textAlign:"center"}}>
+          <div style={{fontSize:20,marginBottom:4}}>🏢</div>
+          <div style={{fontSize:24,fontWeight:800,color:"#0984E3"}}>{company.length}</div>
+          <div style={{fontSize:10,color:"#8B8BAD",marginTop:3}}>จดบริษัท</div>
+        </div>
+        <div style={{background:"#E0FAF4",borderRadius:14,padding:"14px 10px",borderTop:"3px solid #00B894",textAlign:"center"}}>
+          <div style={{fontSize:20,marginBottom:4}}>📋</div>
+          <div style={{fontSize:24,fontWeight:800,color:"#00B894"}}>{annual.length}</div>
+          <div style={{fontSize:10,color:"#8B8BAD",marginTop:3}}>ยื่นภาษี</div>
+        </div>
+      </div>
+
+      {/* สถานะลูกค้า */}
+      <div style={{background:"#fff",borderRadius:16,border:"1px solid #E8E6FF",padding:16,marginBottom:12}}>
+        <div style={{fontSize:13,fontWeight:700,color:"#1E1B4B",marginBottom:14}}>สถานะลูกค้า</div>
+        {[
+          {key:"A",label:"สอบถามใหม่",color:"#6C5CE7"},
+          {key:"B",label:"ลูกค้าปัจจุบัน",color:"#00B894"},
+          {key:"D",label:"หายไป >90วัน",color:"#D63031"},
+        ].map(s=>{
+          const n=custs.filter(c=>c.status===s.key).length;
+          const p=custs.length?Math.round(n/custs.length*100):0;
           return(
-            <Card key={k} style={{borderTop:`2px solid ${t.c}`,padding:11}}>
-              <div style={{fontSize:10,fontWeight:500,color:t.c,marginBottom:4}}>{t.l}</div>
-              <div style={{fontSize:20,fontWeight:500,color:"var(--color-text-primary)",marginBottom:2}}>{data.length} <span style={{fontSize:10,color:C.muted}}>ราย</span></div>
-              <div style={{fontSize:10,color:C.green,fontWeight:500,marginBottom:8}}>฿{r.toLocaleString()}</div>
-              {Object.entries(SM).map(([s,v])=>{const n=data.filter(c=>c.status===s).length;if(!n)return null;return <BarRow key={s} label={`${s}·${v.l}`} val={n} total={data.length} color={v.c} lw={64}/>;})}</Card>
+            <div key={s.key} style={{marginBottom:10}}>
+              <div style={{display:"flex",justifyContent:"space-between",marginBottom:4}}>
+                <div style={{display:"flex",alignItems:"center",gap:8}}>
+                  <div style={{width:10,height:10,borderRadius:3,background:s.color}}/>
+                  <span style={{fontSize:12,color:"#1E1B4B",fontWeight:500}}>{s.label}</span>
+                </div>
+                <span style={{fontSize:12,fontWeight:700,color:s.color}}>{n} ราย · {p}%</span>
+              </div>
+              <div style={{height:8,borderRadius:4,background:"#F0EFF8",overflow:"hidden"}}>
+                <div style={{width:`${p}%`,height:"100%",borderRadius:4,background:s.color,transition:"width .4s"}}/>
+              </div>
+            </div>
           );
         })}
       </div>
-      <div style={{display:"grid",gridTemplateColumns:"1fr 1fr",gap:8,marginBottom:10}}>
-        <Card><CTitle>สถานะลูกค้า</CTitle>{Object.entries(SM).map(([s,v])=><BarRow key={s} label={`${s}·${v.l}`} val={custs.filter(c=>c.status===s).length} total={custs.length} color={v.c} lw={80}/>)}</Card>
-        <Card><CTitle>ช่องทางที่มา</CTitle>{Object.entries(sources).sort((a,b)=>b[1]-a[1]).map(([s,n])=><BarRow key={s} label={s} val={n} total={custs.length} color={C.teal} lw={72}/>)}</Card>
-      </div>
-      <div style={{display:"grid",gridTemplateColumns:"1fr 1fr",gap:8,marginBottom:10}}>
-        <Card><CTitle>ประสิทธิภาพทีมบัญชี</CTitle>
+
+      {/* ทีมบัญชี + ช่องทางที่มา */}
+      <div style={{display:"grid",gridTemplateColumns:"1fr 1fr",gap:10,marginBottom:12}}>
+        <div style={{background:"#fff",borderRadius:16,border:"1px solid #E8E6FF",padding:14}}>
+          <div style={{fontSize:13,fontWeight:700,color:"#1E1B4B",marginBottom:10}}>ทีมบัญชี</div>
           {[
-            {l:"เอกสารตรวจแล้ว",v:`${docsChecked} ไฟล์`,c:C.teal},
-            {l:"คะแนนความพึงพอใจ",v:`${avgScore}/5`,c:C.purple},
-            {l:"จำนวนรีวิว",v:`${ratings.length} ครั้ง`,c:C.blue},
+            {label:"เอกสารตรวจ",val:`${docsChecked} ไฟล์`,c:"#6C5CE7",bg:"#EEEBff"},
+            {label:"คะแนน",val:`${avgScore}/5 ⭐`,c:"#00B894",bg:"#E0FAF4"},
+            {label:"รีวิว",val:`${ratings.length} ครั้ง`,c:"#0984E3",bg:"#E8F4FD"},
           ].map(i=>(
-            <div key={i.l} style={{display:"flex",justifyContent:"space-between",padding:"8px 0",borderBottom:`0.5px solid ${C.bdr}`,fontSize:13}}><span style={{color:C.muted}}>{i.l}</span><span style={{fontWeight:600,color:i.c}}>{i.v}</span></div>
+            <div key={i.label} style={{borderRadius:12,padding:"10px 14px",display:"flex",justifyContent:"space-between",alignItems:"center",marginBottom:8,background:i.bg}}>
+              <span style={{fontSize:11,color:"#8B8BAD"}}>{i.label}</span>
+              <span style={{fontSize:12,fontWeight:700,color:i.c}}>{i.val}</span>
+            </div>
           ))}
-        </Card>
-        <Card><CTitle>ผลงานเซลล์</CTitle>
-          {SALESPEOPLE.map(sp=>{
-            const mine=custs.filter(c=>c.by===sp.name&&c.status==="B"),rev2=mine.filter(c=>c.paid).reduce((s,c)=>s+c.price,0);
+        </div>
+        <div style={{background:"#fff",borderRadius:16,border:"1px solid #E8E6FF",padding:14}}>
+          <div style={{fontSize:13,fontWeight:700,color:"#1E1B4B",marginBottom:10}}>ช่องทางที่มา</div>
+          {Object.keys(sources).length===0 && <div style={{color:"#8B8BAD",fontSize:12,textAlign:"center",padding:"10px 0"}}>ยังไม่มีข้อมูล</div>}
+          {Object.entries(sources).sort((a,b)=>b[1]-a[1]).slice(0,4).map(([s,n],i)=>{
+            const barColors=["#6C5CE7","#A29BFE","#CECBF6","#EEEBff"];
             return(
-              <div key={sp.name} style={{display:"flex",alignItems:"center",gap:8,marginBottom:10}}>
-                <div style={{width:30,height:30,borderRadius:"50%",background:sp.c+"20",display:"flex",alignItems:"center",justifyContent:"center",fontWeight:500,color:sp.c,fontSize:13,flexShrink:0}}>{sp.name[0]}</div>
-                <div style={{flex:1}}><div style={{fontWeight:500,fontSize:12,color:"var(--color-text-primary)"}}>{sp.name}</div><div style={{fontSize:10,color:C.muted}}>{mine.length} ราย</div></div>
-                <div style={{textAlign:"right"}}><div style={{fontWeight:500,color:C.green,fontSize:12}}>฿{rev2.toLocaleString()}</div><div style={{fontSize:9,color:C.muted}}>รายได้/เดือน</div></div>
+              <div key={s} style={{marginBottom:8}}>
+                <div style={{display:"flex",justifyContent:"space-between",fontSize:11,marginBottom:3}}>
+                  <span style={{color:"#8B8BAD"}}>{s}</span>
+                  <span style={{fontWeight:700,color:"#6C5CE7"}}>{n}</span>
+                </div>
+                <div style={{height:8,borderRadius:4,background:"#F0EFF8",overflow:"hidden"}}>
+                  <div style={{width:`${custs.length?Math.round(n/custs.length*100):0}%`,height:"100%",borderRadius:4,background:barColors[i]||"#6C5CE7"}}/>
+                </div>
               </div>
             );
           })}
-        </Card>
+        </div>
       </div>
+
+      {/* ผลงานเซลล์ */}
+      <div style={{background:"#fff",borderRadius:16,border:"1px solid #E8E6FF",padding:16,marginBottom:12}}>
+        <div style={{fontSize:13,fontWeight:700,color:"#1E1B4B",marginBottom:12}}>ผลงานเซลล์</div>
+        {salesNames.length===0 && <div style={{color:"#8B8BAD",fontSize:12,textAlign:"center",padding:"10px 0"}}>ยังไม่มีข้อมูล</div>}
+        {salesNames.map((name,ni)=>{
+          const mine=custs.filter(c=>c.by===name&&c.status==="B");
+          const myRev=mine.filter(c=>c.paid).reduce((s,c)=>s+c.price,0);
+          const color=salesColors[ni%salesColors.length];
+          const bg=salesBgs[ni%salesBgs.length];
+          const p=custs.length?Math.round(mine.length/custs.length*100):0;
+          return(
+            <div key={name} style={{display:"flex",alignItems:"center",gap:10,marginBottom:ni<salesNames.length-1?12:0}}>
+              <div style={{width:40,height:40,borderRadius:12,background:bg,display:"flex",alignItems:"center",justifyContent:"center",fontWeight:800,color,fontSize:16,flexShrink:0}}>{name[0]}</div>
+              <div style={{flex:1}}>
+                <div style={{fontWeight:700,fontSize:13,color:"#1E1B4B"}}>{name}</div>
+                <div style={{height:8,borderRadius:4,background:"#F0EFF8",overflow:"hidden",marginTop:5}}>
+                  <div style={{width:`${p}%`,height:"100%",borderRadius:4,background:color,transition:"width .4s"}}/>
+                </div>
+              </div>
+              <div style={{textAlign:"right",flexShrink:0}}>
+                <div style={{fontWeight:800,color:"#00B894",fontSize:14}}>฿{myRev.toLocaleString()}</div>
+                <div style={{fontSize:10,color:"#8B8BAD"}}>{mine.length} ราย</div>
+              </div>
+            </div>
+          );
+        })}
+      </div>
+
+      {/* เอกสารค้าง */}
       {docRisk.length>0 && (
-        <Card style={{background:C.redBg,border:`0.5px solid ${C.red}40`}}>
-          <CTitle>เอกสารค้างส่ง — ต้องติดตาม</CTitle>
+        <div style={{background:"#FFEAEA",borderRadius:16,border:"1px solid #D6303130",padding:16}}>
+          <div style={{fontSize:13,fontWeight:700,color:"#791F1F",marginBottom:10}}>⚠️ เอกสารค้างส่ง</div>
           {docRisk.map(c=>(
-            <div key={c.id} style={{display:"flex",alignItems:"center",gap:8,padding:"6px 0",borderBottom:`0.5px solid rgba(163,45,45,.15)`}}>
-              <Pill c={TM[c.type].c} bg={TM[c.type].bg}>{TM[c.type].l}</Pill>
-              <b style={{fontSize:12,color:"var(--color-text-primary)",flex:1}}>{c.name}</b>
-              <span style={{fontSize:10,color:C.muted}}>{c.by}</span>
-              <Pill c={C.red} bg={C.redBg}>ค้าง</Pill>
+            <div key={c.id} style={{display:"flex",alignItems:"center",gap:8,padding:"8px 0",borderBottom:"1px solid #D6303115"}}>
+              <div style={{width:8,height:8,borderRadius:"50%",background:"#D63031",flexShrink:0}}/>
+              <span style={{fontWeight:700,fontSize:13,color:"#1E1B4B",flex:1}}>{c.name}</span>
+              <span style={{fontSize:11,color:"#8B8BAD"}}>{c.by}</span>
+              <span style={{background:"#FFEAEA",color:"#D63031",borderRadius:20,padding:"2px 10px",fontSize:10,fontWeight:600}}>ค้าง</span>
             </div>
           ))}
-        </Card>
+        </div>
       )}
+
     </div>
   );
 }
 
-// ── Pipeline ──────────────────────────────────────────────────────────────────
+
 function PipelineView({custs}){
   const cols={};custs.forEach(c=>{if(!cols[c.pipe])cols[c.pipe]=[];cols[c.pipe].push(c);});
   return(
@@ -1087,7 +1184,7 @@ function ChurnView(){
           <CTitle>รายละเอียด ({churnList.length} ราย)</CTitle>
           <table style={{width:"100%",borderCollapse:"collapse",fontSize:13,tableLayout:"fixed"}}>
             <thead>
-              <tr style={{borderBottom:`1px solid ${C.bdr}`,background:"var(--color-background-secondary)"}}>
+              <tr style={{borderBottom:`1px solid ${C.bdr}`,background:C.surf}}>
                 {["ชื่อ","บริการ","สาเหตุ","เดือน"].map(h=>(
                   <th key={h} style={{padding:"8px 10px",textAlign:"left",fontSize:12,fontWeight:600,color:C.muted}}>{h}</th>
                 ))}
@@ -1236,77 +1333,146 @@ function mapCust(c){
 }
 
 export default function App(){
-  const [tab,setTab]=useState("crm");
+  const [tab,setTab]=useState("db");
   const [custs,setCusts]=useState([]);
   const [loading,setLoading]=useState(true);
   const [refreshing,setRefreshing]=useState(false);
   const [lastUpdated,setLastUpdated]=useState(null);
+  const [isWide,setIsWide]=useState(typeof window!=='undefined'&&window.innerWidth>=768);
+
+  React.useEffect(()=>{
+    const handler=()=>setIsWide(window.innerWidth>=768);
+    window.addEventListener('resize',handler);
+    return ()=>window.removeEventListener('resize',handler);
+  },[]);
 
   function fetchData(showRefresh=false){
     if(showRefresh) setRefreshing(true);
     fetch(`${API_URL}/api/customers`)
       .then(r=>r.json())
-      .then(data=>{
-        if(Array.isArray(data)) setCusts(data.map(mapCust));
-        setLoading(false);
-        setRefreshing(false);
-        setLastUpdated(new Date().toLocaleTimeString('th-TH'));
-      })
+      .then(data=>{ if(Array.isArray(data)) setCusts(data.map(mapCust)); setLoading(false); setRefreshing(false); setLastUpdated(new Date().toLocaleTimeString('th-TH')); })
       .catch(()=>{ setLoading(false); setRefreshing(false); });
   }
 
-  React.useEffect(()=>{
-    fetchData();
-    const interval = setInterval(()=>fetchData(), 30000);
-    return ()=>clearInterval(interval);
-  },[]);
+  React.useEffect(()=>{ fetchData(); const iv=setInterval(()=>fetchData(),30000); return ()=>clearInterval(iv); },[]);
 
   const addCust=c=>setCusts(p=>[...p,c]);
   const m=custs.filter(c=>c.type==="monthly").length;
   const co=custs.filter(c=>c.type==="company").length;
   const a=custs.filter(c=>c.type==="annual").length;
+  const totalRev=custs.filter(c=>c.paid).reduce((s,c)=>s+c.price,0);
 
   const MAIN_NAV=[
-    {id:"crm",label:"CRM",icon:"👥"},
-    {id:"db",label:"Dashboard",icon:"📊"},
-    {id:"pipe",label:"Pipeline",icon:"🎯"},
-    {id:"tgt",label:"เป้าเซลล์",icon:"📈"},
-    {id:"churn",label:"Churn",icon:"❌"},
-    {id:"forms",label:"ใบรับงาน",icon:"📄"},
+    {id:"db",    label:"Dashboard", icon:"▦"},
+    {id:"crm",   label:"ลูกค้า",    icon:"👥"},
+    {id:"pipe",  label:"Pipeline",  icon:"🎯"},
+    {id:"tgt",   label:"เป้าเซลล์",  icon:"📈"},
+    {id:"churn", label:"Churn",     icon:"❌"},
+    {id:"forms", label:"ใบรับงาน",   icon:"📄"},
   ];
 
+  const tabLabel=MAIN_NAV.find(n=>n.id===tab)?.label||"";
+
   return(
-    <div style={{fontFamily:"-apple-system,BlinkMacSystemFont,'Segoe UI',Sarabun,sans-serif",background:"var(--color-background-secondary)",display:"flex",flexDirection:"column",height:"100vh",maxHeight:820,maxWidth:760,margin:"0 auto"}}>
-      <div style={{background:C.navy,color:"#fff",padding:"10px 16px",display:"flex",alignItems:"center",gap:10,flexShrink:0}}>
-        <div style={{width:30,height:30,background:C.teal,borderRadius:8,display:"flex",alignItems:"center",justifyContent:"center",fontWeight:900,fontSize:13,color:C.navy,flexShrink:0}}>F</div>
-        <div style={{flex:1}}>
-          <div style={{fontWeight:700,fontSize:16,letterSpacing:0.3}}>Finovas CRM</div>
-          <div style={{fontSize:12,color:C.tealBg,marginTop:2}}>รายเดือน {m} · จดบริษัท {co} · ยื่นภาษี {a} · รวม {custs.length} ราย</div>
-          {lastUpdated && <div style={{fontSize:10,color:"#9FE1CB",marginTop:1}}>อัพเดทล่าสุด {lastUpdated}</div>}
+    <div style={{fontFamily:"-apple-system,BlinkMacSystemFont,'Segoe UI',Sarabun,sans-serif",height:"100vh",display:"flex",overflow:"hidden",background:C.bg}}>
+
+      {/* Sidebar — desktop */}
+      {isWide && (
+        <div style={{width:220,background:"#1E1B4B",display:"flex",flexDirection:"column",flexShrink:0}}>
+          <div style={{padding:"22px 18px 16px",borderBottom:"1px solid rgba(255,255,255,.08)"}}>
+            <div style={{display:"flex",alignItems:"center",gap:12}}>
+              <div style={{width:38,height:38,background:"#6C5CE7",borderRadius:12,display:"flex",alignItems:"center",justifyContent:"center",fontWeight:900,fontSize:18,color:"#fff"}}>F</div>
+              <div>
+                <div style={{color:"#fff",fontWeight:800,fontSize:15}}>Finovas</div>
+                <div style={{color:"rgba(255,255,255,.4)",fontSize:10}}>ระบบบัญชีอัจฉริยะ</div>
+              </div>
+            </div>
+          </div>
+          <div style={{padding:"12px 14px",borderBottom:"1px solid rgba(255,255,255,.06)"}}>
+            <div style={{display:"grid",gridTemplateColumns:"1fr 1fr",gap:8}}>
+              <div style={{background:"rgba(108,92,231,.25)",borderRadius:10,padding:"10px 12px"}}>
+                <div style={{color:"rgba(255,255,255,.4)",fontSize:9,marginBottom:3}}>ลูกค้า</div>
+                <div style={{color:"#fff",fontWeight:800,fontSize:20}}>{custs.length}</div>
+              </div>
+              <div style={{background:"rgba(0,184,148,.2)",borderRadius:10,padding:"10px 12px"}}>
+                <div style={{color:"rgba(255,255,255,.4)",fontSize:9,marginBottom:3}}>รายได้</div>
+                <div style={{color:"#00B894",fontWeight:800,fontSize:12}}>฿{totalRev.toLocaleString()}</div>
+              </div>
+            </div>
+          </div>
+          <div style={{flex:1,padding:"14px 10px",overflowY:"auto"}}>
+            <div style={{fontSize:9,fontWeight:700,color:"rgba(255,255,255,.25)",letterSpacing:1.5,marginBottom:10,paddingLeft:10}}>เมนูหลัก</div>
+            {MAIN_NAV.map(n=>(
+              <button key={n.id} onClick={()=>setTab(n.id)}
+                style={{width:"100%",background:tab===n.id?"#6C5CE7":"transparent",color:tab===n.id?"#fff":"rgba(255,255,255,.5)",border:"none",borderRadius:10,padding:"10px 14px",cursor:"pointer",fontFamily:"inherit",fontWeight:tab===n.id?700:400,fontSize:13,display:"flex",alignItems:"center",gap:12,marginBottom:3,transition:"all .15s"}}>
+                <span style={{fontSize:16}}>{n.icon}</span><span>{n.label}</span>
+              </button>
+            ))}
+          </div>
+          <div style={{padding:"14px 16px",borderTop:"1px solid rgba(255,255,255,.08)",display:"flex",alignItems:"center",gap:10}}>
+            <div style={{width:32,height:32,borderRadius:10,background:"#6C5CE7",display:"flex",alignItems:"center",justifyContent:"center",fontWeight:800,color:"#fff",fontSize:13}}>ผ</div>
+            <div style={{flex:1}}>
+              <div style={{color:"#fff",fontSize:11,fontWeight:700}}>แอดมิน</div>
+              <div style={{color:"rgba(255,255,255,.35)",fontSize:9}}>Finovas CRM</div>
+            </div>
+            <button onClick={()=>fetchData(true)} style={{background:"none",border:"none",color:"rgba(255,255,255,.4)",cursor:"pointer",fontSize:16}}>{refreshing?"⏳":"🔄"}</button>
+          </div>
         </div>
-        <button onClick={()=>fetchData(true)} disabled={refreshing}
-          style={{background:"transparent",border:"1px solid #9FE1CB",borderRadius:8,padding:"6px 10px",cursor:"pointer",color:"#9FE1CB",fontSize:12,fontFamily:"inherit",flexShrink:0}}>
-          {refreshing ? "⏳" : "🔄"}
-        </button>
-      </div>
+      )}
 
-      <div style={{display:"flex",background:C.white,borderBottom:`0.5px solid ${C.bdr}`,flexShrink:0,overflowX:"auto"}}>
-        {MAIN_NAV.map(n=>(
-          <button key={n.id} onClick={()=>setTab(n.id)} style={{flex:1,minWidth:54,background:"transparent",border:"none",borderBottom:tab===n.id?`3px solid ${C.teal}`:"3px solid transparent",padding:"10px 4px",cursor:"pointer",fontSize:12,fontWeight:600,color:tab===n.id?C.teal:"var(--color-text-secondary)",display:"flex",flexDirection:"column",alignItems:"center",gap:3,fontFamily:"inherit",transition:"color .15s"}}>
-            <span style={{fontSize:18}}>{n.icon}</span><span>{n.label}</span>
-          </button>
-        ))}
-      </div>
+      {/* Main content */}
+      <div style={{flex:1,display:"flex",flexDirection:"column",overflow:"hidden",minWidth:0}}>
 
-      <div style={{flex:1,overflow:"hidden",display:"flex",flexDirection:"column",minHeight:0}}>
-        {loading && <div style={{padding:40,textAlign:"center",color:"var(--color-text-secondary)",fontSize:14}}>⏳ กำลังโหลดข้อมูล...</div>}
-        {loading && <div style={{padding:32,textAlign:"center",color:"var(--color-text-secondary)",fontSize:14}}>⏳ กำลังโหลดข้อมูล...</div>}
-        {!loading && tab==="crm"   && <CRMView custs={custs} setCusts={setCusts}/>}
-        {!loading && tab==="db"    && <DashboardView custs={custs}/>}
-        {!loading && tab==="pipe"  && <PipelineView custs={custs}/>}
-        {tab==="tgt"   && <TargetsView/>}
-        {tab==="churn" && <ChurnView/>}
-        {tab==="forms" && <SecFormsView/>}
+        {/* Banner — Finovas Global */}
+        <div style={{background:"linear-gradient(135deg,#1E1B4B 0%,#4B3BB5 60%,#6C5CE7 100%)",padding:"18px 24px",flexShrink:0,position:"relative",overflow:"hidden"}}>
+          <div style={{position:"absolute",top:-20,right:-20,width:100,height:100,borderRadius:"50%",background:"rgba(255,255,255,.06)"}}/>
+          <div style={{position:"absolute",bottom:-30,right:80,width:70,height:70,borderRadius:"50%",background:"rgba(255,255,255,.04)"}}/>
+          <div style={{display:"flex",alignItems:"center",justifyContent:"space-between",position:"relative"}}>
+            <div>
+              <div style={{fontSize:10,color:"rgba(255,255,255,.5)",letterSpacing:2,marginBottom:4}}>FINOVAS GLOBAL</div>
+              <div style={{fontSize:20,fontWeight:800,color:"#fff",letterSpacing:-.5}}>ระบบบัญชีอัจฉริยะ</div>
+              <div style={{fontSize:11,color:"rgba(255,255,255,.5)",marginTop:3}}>{custs.length} ลูกค้า · รายได้ ฿{totalRev.toLocaleString()}/เดือน</div>
+            </div>
+            <div style={{textAlign:"right"}}>
+              <div style={{fontSize:10,color:"rgba(255,255,255,.4)"}}>อัพเดท</div>
+              <div style={{fontSize:13,fontWeight:700,color:"#fff"}}>{lastUpdated||"--:--"}</div>
+              <button onClick={()=>fetchData(true)} style={{background:"rgba(255,255,255,.12)",border:"1px solid rgba(255,255,255,.2)",borderRadius:8,padding:"5px 12px",cursor:"pointer",color:"#fff",fontSize:11,fontFamily:"inherit",marginTop:6,display:"block",width:"100%"}}>{refreshing?"⏳ โหลด...":"🔄 รีเฟรช"}</button>
+            </div>
+          </div>
+        </div>
+
+        {/* Top bar */}
+        <div style={{background:C.white,borderBottom:`1px solid ${C.bdr}`,padding:"12px 20px",display:"flex",alignItems:"center",gap:12,flexShrink:0}}>
+          {!isWide && <div style={{width:32,height:32,background:"#6C5CE7",borderRadius:8,display:"flex",alignItems:"center",justifyContent:"center",fontWeight:900,fontSize:14,color:"#fff",flexShrink:0}}>F</div>}
+          <div style={{flex:1}}>
+            <div style={{fontWeight:800,fontSize:15,color:C.text}}>{tabLabel}</div>
+            <div style={{fontSize:11,color:C.muted}}>{m} รายเดือน · {co} จดบริษัท · {a} ยื่นภาษี</div>
+          </div>
+
+        </div>
+
+        {/* Content */}
+        <div style={{flex:1,overflow:"hidden",display:"flex",flexDirection:"column",minHeight:0}}>
+          {loading && <div style={{padding:40,textAlign:"center",color:C.muted,fontSize:14,background:C.bg,flex:1}}>⏳ กำลังโหลดข้อมูล...</div>}
+          {!loading && tab==="db"    && <DashboardView custs={custs}/>}
+          {!loading && tab==="crm"   && <CRMView custs={custs} setCusts={setCusts}/>}
+          {!loading && tab==="pipe"  && <PipelineView custs={custs}/>}
+          {tab==="tgt"   && <TargetsView/>}
+          {tab==="churn" && <ChurnView/>}
+          {tab==="forms" && <SecFormsView/>}
+        </div>
+
+        {/* Bottom nav — mobile */}
+        {!isWide && (
+          <div style={{display:"flex",borderTop:`1px solid ${C.bdr}`,background:"#1E1B4B",flexShrink:0,padding:"6px 8px",gap:2}}>
+            {MAIN_NAV.map(n=>(
+              <button key={n.id} onClick={()=>setTab(n.id)} style={{flex:1,minWidth:44,background:tab===n.id?"#6C5CE7":"transparent",border:"none",borderRadius:10,padding:"7px 2px",cursor:"pointer",fontSize:10,fontWeight:tab===n.id?700:400,color:tab===n.id?"#fff":"rgba(255,255,255,.45)",display:"flex",flexDirection:"column",alignItems:"center",gap:2,fontFamily:"inherit",transition:"all .15s"}}>
+                <span style={{fontSize:15}}>{n.icon}</span>
+                <span style={{fontSize:9}}>{n.label}</span>
+              </button>
+            ))}
+          </div>
+        )}
       </div>
     </div>
   );
