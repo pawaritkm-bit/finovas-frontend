@@ -1239,12 +1239,26 @@ export default function App(){
   const [tab,setTab]=useState("crm");
   const [custs,setCusts]=useState([]);
   const [loading,setLoading]=useState(true);
+  const [refreshing,setRefreshing]=useState(false);
+  const [lastUpdated,setLastUpdated]=useState(null);
 
-  React.useEffect(()=>{
+  function fetchData(showRefresh=false){
+    if(showRefresh) setRefreshing(true);
     fetch(`${API_URL}/api/customers`)
       .then(r=>r.json())
-      .then(data=>{ if(Array.isArray(data)) setCusts(data.map(mapCust)); setLoading(false); })
-      .catch(()=>setLoading(false));
+      .then(data=>{
+        if(Array.isArray(data)) setCusts(data.map(mapCust));
+        setLoading(false);
+        setRefreshing(false);
+        setLastUpdated(new Date().toLocaleTimeString('th-TH'));
+      })
+      .catch(()=>{ setLoading(false); setRefreshing(false); });
+  }
+
+  React.useEffect(()=>{
+    fetchData();
+    const interval = setInterval(()=>fetchData(), 30000);
+    return ()=>clearInterval(interval);
   },[]);
 
   const addCust=c=>setCusts(p=>[...p,c]);
@@ -1268,7 +1282,12 @@ export default function App(){
         <div style={{flex:1}}>
           <div style={{fontWeight:700,fontSize:16,letterSpacing:0.3}}>Finovas CRM</div>
           <div style={{fontSize:12,color:C.tealBg,marginTop:2}}>รายเดือน {m} · จดบริษัท {co} · ยื่นภาษี {a} · รวม {custs.length} ราย</div>
+          {lastUpdated && <div style={{fontSize:10,color:"#9FE1CB",marginTop:1}}>อัพเดทล่าสุด {lastUpdated}</div>}
         </div>
+        <button onClick={()=>fetchData(true)} disabled={refreshing}
+          style={{background:"transparent",border:"1px solid #9FE1CB",borderRadius:8,padding:"6px 10px",cursor:"pointer",color:"#9FE1CB",fontSize:12,fontFamily:"inherit",flexShrink:0}}>
+          {refreshing ? "⏳" : "🔄"}
+        </button>
       </div>
 
       <div style={{display:"flex",background:C.white,borderBottom:`0.5px solid ${C.bdr}`,flexShrink:0,overflowX:"auto"}}>
