@@ -1,0 +1,525 @@
+<!DOCTYPE html>
+<html lang="th">
+<head>
+<meta charset="UTF-8"/>
+<meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0"/>
+<title>Finovas — ใบรับงาน</title>
+<script src="https://static.line-scdn.net/liff/edge/2/sdk.js"></script>
+<style>
+*{box-sizing:border-box;margin:0;padding:0;-webkit-tap-highlight-color:transparent}
+body{font-family:-apple-system,BlinkMacSystemFont,'Segoe UI',Sarabun,sans-serif;background:#F4F3FF;min-height:100vh;padding-bottom:100px}
+
+/* Header */
+.header{background:linear-gradient(135deg,#1E1B4B,#534AB7);color:#fff;padding:16px 18px;position:sticky;top:0;z-index:10;display:flex;align-items:center;gap:12px;box-shadow:0 2px 8px rgba(30,27,75,.3)}
+.logo{width:38px;height:38px;background:rgba(255,255,255,.15);border-radius:10px;display:flex;align-items:center;justify-content:center;font-weight:900;font-size:16px;color:#fff;flex-shrink:0}
+.header-title{font-size:15px;font-weight:700;letter-spacing:-.3px}
+.header-sub{font-size:11px;color:rgba(255,255,255,.6);margin-top:2px}
+
+/* Type Tabs */
+.type-tabs{display:flex;background:#fff;border-bottom:2px solid #E8E6FF;padding:0 8px;gap:4px}
+.type-tab{flex:1;padding:14px 4px;border:none;background:none;font-family:inherit;font-size:12px;font-weight:500;color:#8B8BAD;border-bottom:3px solid transparent;cursor:pointer;display:flex;flex-direction:column;align-items:center;gap:4px;margin-bottom:-2px;transition:all .2s}
+.type-tab.active{color:#534AB7;border-bottom-color:#534AB7;font-weight:700}
+.type-icon{font-size:20px}
+
+/* Fields */
+.section{padding:16px 16px 0}
+.section-label{font-size:11px;font-weight:700;color:#fff;background:#534AB7;border-radius:6px;padding:4px 12px;margin-bottom:12px;display:inline-block;letter-spacing:.5px}
+.field{margin-bottom:14px}
+.field label{font-size:13px;font-weight:600;color:#1E1B4B;margin-bottom:6px;display:block}
+.field label .req{color:#D63031}
+.field input[type=text],
+.field input[type=number],
+.field input[type=date],
+.field textarea,
+.field select{width:100%;border:1.5px solid #E8E6FF;border-radius:10px;padding:12px 14px;font-size:14px;font-family:inherit;outline:none;background:#fff;color:#1E1B4B;transition:border .2s}
+.field input:focus,.field textarea:focus,.field select:focus{border-color:#534AB7;box-shadow:0 0 0 3px rgba(83,74,183,.1)}
+.field select{background-image:url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='12' height='8' viewBox='0 0 12 8'%3E%3Cpath d='M1 1l5 5 5-5' stroke='%238B8BAD' stroke-width='1.5' fill='none' stroke-linecap='round'/%3E%3C/svg%3E");background-repeat:no-repeat;background-position:right 14px center;padding-right:36px;appearance:none;-webkit-appearance:none}
+.field textarea{resize:vertical;min-height:80px;line-height:1.6}
+.grid2{display:grid;grid-template-columns:1fr 1fr;gap:10px}
+
+/* Radio */
+.radio-group{display:flex;gap:8px;flex-wrap:wrap}
+.radio-btn{flex:1;min-width:80px;border:1.5px solid #E8E6FF;border-radius:10px;padding:10px 8px;font-size:13px;text-align:center;cursor:pointer;background:#fff;color:#8B8BAD;font-family:inherit;transition:all .2s;font-weight:500}
+.radio-btn.selected{border-color:#534AB7;background:#EEEBff;color:#534AB7;font-weight:700}
+
+/* Checkbox */
+.check-item{display:flex;align-items:center;gap:10px;padding:12px 0;border-bottom:1px solid #F0EFF8;cursor:pointer}
+.check-item:last-child{border-bottom:none}
+.check-item input[type=checkbox]{width:20px;height:20px;accent-color:#534AB7;flex-shrink:0;cursor:pointer}
+.check-item span{font-size:13px;color:#1E1B4B;line-height:1.5;font-weight:500}
+
+/* Info Box */
+.info-box{background:#EEEBff;border:1.5px solid #534AB750;border-radius:12px;padding:12px 14px;margin-bottom:14px}
+.info-box .info-title{font-size:11px;color:#8B8BAD;margin-bottom:4px;font-weight:600}
+.info-box .info-name{font-size:15px;font-weight:700;color:#1E1B4B}
+.info-box .info-sub{font-size:12px;color:#534AB7;margin-top:3px;font-weight:500}
+
+/* Person Box */
+.person-box{background:#F4F3FF;border-radius:10px;padding:12px 14px;margin-bottom:10px;border:1px solid #E8E6FF}
+.person-box .person-title{font-size:11px;font-weight:700;color:#8B8BAD;margin-bottom:10px;letter-spacing:.5px}
+
+/* Warn */
+.warn-box{background:#FFF8E1;border:1.5px solid #FDCB6E60;border-radius:10px;padding:12px 14px;font-size:13px;color:#633806;font-weight:500;margin-bottom:12px}
+
+/* Footer */
+.footer{position:fixed;bottom:0;left:0;right:0;background:#fff;border-top:1px solid #E8E6FF;padding:14px 16px;display:flex;gap:10px;z-index:10;box-shadow:0 -2px 8px rgba(30,27,75,.08)}
+.btn-back{flex:1;background:#F4F3FF;color:#534AB7;border:1.5px solid #E8E6FF;border-radius:12px;padding:14px;font-family:inherit;font-size:14px;font-weight:600;cursor:pointer}
+.btn-next{flex:2;background:linear-gradient(135deg,#534AB7,#6C5CE7);color:#fff;border:none;border-radius:12px;padding:14px;font-family:inherit;font-size:14px;font-weight:700;cursor:pointer;box-shadow:0 3px 10px rgba(83,74,183,.3)}
+.btn-next:disabled{background:#C4C0F0;box-shadow:none;cursor:not-allowed}
+
+/* Success */
+.success{display:flex;flex-direction:column;align-items:center;justify-content:center;min-height:70vh;padding:32px 24px;text-align:center}
+.success-icon{font-size:72px;margin-bottom:20px}
+.success-title{font-size:22px;font-weight:800;color:#534AB7;margin-bottom:10px}
+.success-sub{font-size:14px;color:#8B8BAD;line-height:1.7}
+.hidden{display:none!important}
+
+/* Card */
+.card{background:#fff;border-radius:14px;border:1px solid #E8E6FF;padding:16px;margin-bottom:14px;box-shadow:0 1px 4px rgba(83,74,183,.06)}
+</style>
+</head>
+<body>
+
+<div class="header">
+  <div class="logo">F</div>
+  <div>
+    <div class="header-title">Finovas — ใบรับงาน</div>
+    <div class="header-sub">กรอกข้อมูลเพื่อส่งต่อทีมบัญชีค่ะ</div>
+  </div>
+</div>
+
+<!-- Type Tabs -->
+<div class="type-tabs" id="typeTabs">
+  <button class="type-tab active" onclick="setType('monthly',this)">
+    <span class="type-icon">📅</span>ทำรายเดือน
+  </button>
+  <button class="type-tab" onclick="setType('company',this)">
+    <span class="type-icon">🏢</span>จดบริษัท
+  </button>
+  <button class="type-tab" onclick="setType('annual',this)">
+    <span class="type-icon">📋</span>ยื่นภาษี
+  </button>
+</div>
+
+<!-- ── MONTHLY ────────────────────────────────────── -->
+<div id="form-monthly">
+  <div class="section">
+    <div style="margin-top:8px"></div>
+    <div class="card">
+      <div class="section-label">👤 ข้อมูลลูกค้า</div>
+      <div class="field"><label>ชื่อลูกค้า <span class="req">*</span></label><input type="text" id="m-name" placeholder="คุณ..."/></div>
+      <div class="field"><label>ชื่อกิจการ</label><input type="text" id="m-biz" placeholder="บริษัท / ร้านค้า..."/></div>
+      <div class="grid2">
+        <div class="field"><label>วันที่รับงาน</label><input type="date" id="m-date"/></div>
+        <div class="field"><label>Account ID</label><input type="text" id="m-account" placeholder="รหัสลูกค้า"/></div>
+      </div>
+      <div class="field"><label>เบอร์ติดต่อ</label><input type="text" id="m-tel" placeholder="08X-XXX-XXXX"/></div>
+    </div>
+
+    <div class="card">
+      <div class="section-label">💼 รายละเอียดงาน</div>
+      <div class="field">
+        <label>ประเภทบริการ <span class="req">*</span></label>
+        <select id="m-service">
+          <option value="">-- เลือกบริการ --</option>
+          <option>บัญชีรายเดือนนิติบุคคล</option>
+          <option>บัญชีรายเดือนบุคคล</option>
+          <option>ปิดงบ (ผู้สอบบัญชี)</option>
+          <option>บัญชีภายใน</option>
+          <option>วางระบบบัญชี</option>
+        </select>
+      </div>
+      <div class="field"><label>รายละเอียดธุรกิจ</label><textarea id="m-detail" placeholder="อธิบายธุรกิจของลูกค้า..."></textarea></div>
+      <div class="grid2">
+        <div class="field"><label>ค่าบริการ (บาท/เดือน)</label><input type="number" id="m-price" placeholder="4000"/></div>
+        <div class="field">
+          <label>สถานะชำระ</label>
+          <select id="m-pay">
+            <option>ยังไม่ชำระ</option>
+            <option>ชำระแล้ว</option>
+            <option>โอนบางส่วน</option>
+          </select>
+        </div>
+      </div>
+    </div>
+
+    <div class="card">
+      <div class="section-label">📂 เอกสาร</div>
+      <div class="field">
+        <label>ประเภทเอกสาร</label>
+        <div class="radio-group">
+          <button class="radio-btn" onclick="pickR(this,'m-doctype','ภ.ง.ด.')">ภ.ง.ด.</button>
+          <button class="radio-btn" onclick="pickR(this,'m-doctype','ภ.พ.30')">ภ.พ.30</button>
+          <button class="radio-btn" onclick="pickR(this,'m-doctype','งบการเงิน')">งบการเงิน</button>
+          <button class="radio-btn" onclick="pickR(this,'m-doctype','ครบทุกอย่าง')">ครบทุกอย่าง</button>
+        </div>
+      </div>
+      <div class="field"><label>หมายเหตุ</label><textarea id="m-note" placeholder="หมายเหตุเพิ่มเติม..."></textarea></div>
+      <div class="field"><label>ผู้ส่งเรื่อง (เซลล์)</label><input type="text" id="m-sender" placeholder="ชื่อเซลล์"/></div>
+      <div class="field"><label>ผู้รับเรื่อง (เลขา)</label><input type="text" id="m-receiver" placeholder="ชื่อเลขา"/></div>
+    </div>
+  </div>
+</div>
+
+<!-- ── COMPANY ────────────────────────────────────── -->
+<div id="form-company" class="hidden">
+  <div class="section">
+    <div style="margin-top:8px"></div>
+    <div class="card">
+      <div class="section-label">🏢 ข้อมูลบริษัท</div>
+      <div class="field"><label>ชื่อผู้ติดต่อ <span class="req">*</span></label><input type="text" id="c-contact" placeholder="คุณ..."/></div>
+      <div class="field"><label>ชื่อบริษัท (ไทย) <span class="req">*</span></label><input type="text" id="c-company" placeholder="บริษัท ... จำกัด"/></div>
+      <div class="field"><label>ที่อยู่จดทะเบียน</label><textarea id="c-address" placeholder="เลขที่ ถนน แขวง/ตำบล เขต/อำเภอ จังหวัด..."></textarea></div>
+      <div class="grid2">
+        <div class="field">
+          <label>VAT</label>
+          <div class="radio-group">
+            <button class="radio-btn" onclick="pickR(this,'c-vat','จด')">จด</button>
+            <button class="radio-btn" onclick="pickR(this,'c-vat','ไม่จด')">ไม่จด</button>
+          </div>
+        </div>
+        <div class="field">
+          <label>ประกันสังคม</label>
+          <div class="radio-group">
+            <button class="radio-btn" onclick="pickR(this,'c-social','มี')">มี</button>
+            <button class="radio-btn" onclick="pickR(this,'c-social','ไม่มี')">ไม่มี</button>
+          </div>
+        </div>
+      </div>
+      <div class="grid2">
+        <div class="field"><label>ทุนจดทะเบียน (บาท)</label><input type="number" id="c-capital" placeholder="1000000"/></div>
+        <div class="field"><label>ชำระ (%)</label><input type="number" id="c-capital-pct" placeholder="25"/></div>
+      </div>
+      <div class="field"><label>อำนาจกรรมการ</label><input type="text" id="c-authority" placeholder="ลงนามคนเดียว / สองคนร่วมกัน..."/></div>
+    </div>
+
+    <div class="card">
+      <div class="section-label">👥 กรรมการ</div>
+      <div id="c-directors-wrap">
+        <div class="person-box">
+          <div class="person-title">กรรมการที่ 1</div>
+          <div class="field"><label>ชื่อ-นามสกุล</label><input type="text" class="c-dir-name" placeholder="ชื่อ นามสกุล"/></div>
+          <div class="grid2">
+            <div class="field"><label>เบอร์โทร</label><input type="text" class="c-dir-tel" placeholder="08X-XXX-XXXX"/></div>
+            <div class="field"><label>อีเมล</label><input type="text" class="c-dir-email" placeholder="email@..."/></div>
+          </div>
+        </div>
+      </div>
+      <button onclick="addDirector()" style="width:100%;background:#EEEBff;color:#534AB7;border:1.5px dashed #534AB7;border-radius:10px;padding:10px;font-family:inherit;font-size:13px;font-weight:600;cursor:pointer;margin-bottom:4px">+ เพิ่มกรรมการ</button>
+    </div>
+
+    <div class="card">
+      <div class="section-label">👤 ผู้ถือหุ้น</div>
+      <div id="c-shareholders-wrap">
+        <div class="person-box">
+          <div class="person-title">ผู้ถือหุ้นที่ 1</div>
+          <div class="field"><label>ชื่อ-นามสกุล</label><input type="text" class="c-sh-name" placeholder="ชื่อ นามสกุล"/></div>
+          <div class="grid2">
+            <div class="field"><label>สัดส่วน (%)</label><input type="number" class="c-sh-shares" placeholder="50"/></div>
+            <div class="field"><label>เบอร์โทร</label><input type="text" class="c-sh-tel" placeholder="08X-XXX-XXXX"/></div>
+          </div>
+        </div>
+      </div>
+      <button onclick="addShareholder()" style="width:100%;background:#EEEBff;color:#534AB7;border:1.5px dashed #534AB7;border-radius:10px;padding:10px;font-family:inherit;font-size:13px;font-weight:600;cursor:pointer;margin-bottom:4px">+ เพิ่มผู้ถือหุ้น</button>
+    </div>
+
+    <div class="card">
+      <div class="section-label">📋 วัตถุประสงค์</div>
+      <div class="field"><label>วัตถุประสงค์ที่ 1</label><input type="text" id="c-obj1" placeholder="ประกอบธุรกิจ..."/></div>
+      <div class="field"><label>วัตถุประสงค์ที่ 2</label><input type="text" id="c-obj2" placeholder="(ถ้ามี)"/></div>
+      <div class="field"><label>ผู้ส่งเรื่อง (เซลล์)</label><input type="text" id="c-sender" placeholder="ชื่อเซลล์"/></div>
+      <div class="field"><label>ผู้รับเรื่อง (เลขา)</label><input type="text" id="c-receiver" placeholder="ชื่อเลขา"/></div>
+    </div>
+  </div>
+</div>
+
+<!-- ── ANNUAL ────────────────────────────────────── -->
+<div id="form-annual" class="hidden">
+  <div class="section">
+    <div style="margin-top:8px"></div>
+    <div class="card">
+      <div class="section-label">👤 ข้อมูลผู้เสียภาษี</div>
+      <div class="field"><label>ยื่นภาษีในชื่อ <span class="req">*</span></label><input type="text" id="a-name" placeholder="ชื่อ นามสกุล"/></div>
+      <div class="grid2">
+        <div class="field">
+          <label>สถานะ</label>
+          <select id="a-marital">
+            <option>โสด</option>
+            <option>สมรส</option>
+            <option>หม้าย/หย่า</option>
+          </select>
+        </div>
+        <div class="field">
+          <label>เคยยื่นภาษีก่อน</label>
+          <div class="radio-group">
+            <button class="radio-btn" onclick="pickR(this,'a-filed','เคย')">เคย</button>
+            <button class="radio-btn" onclick="pickR(this,'a-filed','ไม่เคย')">ไม่เคย</button>
+          </div>
+        </div>
+      </div>
+      <div class="field" id="a-prev-user-field">
+        <label>Username ภาษีเดิม</label>
+        <input type="text" id="a-prev-user" placeholder="เลขบัตรประชาชน หรือ Username"/>
+      </div>
+    </div>
+
+    <div class="card">
+      <div class="section-label">💰 รายได้และลดหย่อน</div>
+      <div class="field">
+        <label>ประเภทรายได้</label>
+        <div id="a-income-checks">
+          <label class="check-item"><input type="checkbox" value="เงินเดือน (40(1))"/> <span>เงินเดือน (40(1))</span></label>
+          <label class="check-item"><input type="checkbox" value="รับจ้างอิสระ (40(2))"/> <span>รับจ้างอิสระ (40(2))</span></label>
+          <label class="check-item"><input type="checkbox" value="ธุรกิจส่วนตัว (40(8))"/> <span>ธุรกิจส่วนตัว (40(8))</span></label>
+          <label class="check-item"><input type="checkbox" value="ค่าเช่า (40(5))"/> <span>ค่าเช่า (40(5))</span></label>
+          <label class="check-item"><input type="checkbox" value="เงินปันผล (40(4))"/> <span>เงินปันผล (40(4))</span></label>
+        </div>
+      </div>
+      <div class="field">
+        <label>ลดหย่อนที่มี</label>
+        <div id="a-deduction-checks">
+          <label class="check-item"><input type="checkbox" value="ประกันชีวิต"/> <span>ประกันชีวิต</span></label>
+          <label class="check-item"><input type="checkbox" value="ประกันสุขภาพ"/> <span>ประกันสุขภาพ</span></label>
+          <label class="check-item"><input type="checkbox" value="กองทุน LTF/SSF/RMF"/> <span>กองทุน LTF/SSF/RMF</span></label>
+          <label class="check-item"><input type="checkbox" value="ดอกเบี้ยบ้าน"/> <span>ดอกเบี้ยบ้าน</span></label>
+          <label class="check-item"><input type="checkbox" value="บุตร/บิดามารดา"/> <span>บุตร/บิดามารดา</span></label>
+          <label class="check-item"><input type="checkbox" value="ช้อปดีมีคืน"/> <span>ช้อปดีมีคืน</span></label>
+        </div>
+      </div>
+    </div>
+
+    <div class="card">
+      <div class="section-label">📄 เอกสารและหมายเหตุ</div>
+      <div class="field">
+        <label>มี Statement</label>
+        <div class="radio-group">
+          <button class="radio-btn" onclick="pickR(this,'a-statement','มี')">มี</button>
+          <button class="radio-btn" onclick="pickR(this,'a-statement','ไม่มี')">ไม่มี</button>
+        </div>
+      </div>
+      <div class="field"><label>อธิบายธุรกิจเพิ่มเติม</label><textarea id="a-income-note" placeholder="อธิบายรายละเอียดธุรกิจหรือรายได้..."></textarea></div>
+      <div class="field"><label>Line Account ลูกค้า</label><input type="text" id="a-line" placeholder="@line หรือชื่อ LINE"/></div>
+      <div class="field"><label>ผู้ส่งเรื่อง (เซลล์)</label><input type="text" id="a-sender" placeholder="ชื่อเซลล์"/></div>
+      <div class="field"><label>ผู้รับเรื่อง (เลขา)</label><input type="text" id="a-receiver" placeholder="ชื่อเลขา"/></div>
+    </div>
+  </div>
+</div>
+
+<!-- SUCCESS -->
+<div id="stepSuccess" class="hidden">
+  <div class="success">
+    <div class="success-icon">✅</div>
+    <div class="success-title">ส่งใบรับงานแล้วค่ะ!</div>
+    <div class="success-sub">ข้อมูลเข้า Dashboard แล้วนะคะ<br/>ทีมบัญชีจะรับงานต่อค่ะ 🙏<br/><br/>ปิดหน้าต่างนี้ได้เลยค่ะ</div>
+  </div>
+</div>
+
+<div class="footer" id="footer">
+  <button class="btn-next" id="btnSubmit" onclick="submitSec()">📤 ส่งต่อทีมบัญชี</button>
+</div>
+
+<script>
+const API = 'https://finovas-crm-production.up.railway.app';
+let curType = 'monthly';
+let secName = 'เลขา';
+const radios = {};
+
+const API2_UNUSED = 'https://finovas-crm-production.up.railway.app';
+
+liff.init({ liffId: '2010493797-WgCFfbys' }).then(async () => {
+  if (liff.isLoggedIn()) {
+    const p = await liff.getProfile();
+    secName = p.displayName;
+    ['m-receiver','c-receiver','a-receiver'].forEach(id => {
+      const el = document.getElementById(id);
+      if (el) el.value = secName;
+    });
+    const d = new Date().toISOString().split('T')[0];
+    const mdate = document.getElementById('m-date');
+    if (mdate) mdate.value = d;
+  }
+
+  // ดึงข้อมูลลูกค้าจาก cust_id ใน URL
+  const params = new URLSearchParams(window.location.search);
+  const custId = params.get('cust_id');
+  if (custId) {
+    try {
+      const res = await fetch(`${API}/api/customers/${custId}`);
+      const cust = await res.json();
+      if (cust && cust.id) prefillForm(cust);
+    } catch(e) { console.log('prefill error:', e); }
+  }
+}).catch(e => console.log('LIFF error:', e));
+
+function prefillForm(c) {
+  // เลือก tab อัตโนมัติตามบริการ
+  const svc = c.service || '';
+  let tabKey = 'monthly';
+  if (svc.includes('จด') || svc.includes('Holding') || svc.includes('ปิดบริษัท')) tabKey = 'company';
+  else if (svc.includes('ภาษี') || svc.includes('วีซ่า')) tabKey = 'annual';
+  
+  // Switch tab directly
+  ['monthly','company','annual'].forEach(t => {
+    const form = document.getElementById('form-'+t);
+    if (form) form.style.display = t === tabKey ? 'block' : 'none';
+  });
+  document.querySelectorAll('.type-tab').forEach((btn, i) => {
+    const keys = ['monthly','company','annual'];
+    btn.classList.toggle('active', keys[i] === tabKey);
+  });
+  curType = tabKey;
+
+  setTimeout(() => {
+    // Tab รายเดือน
+    const set = (id, val) => { const el = document.getElementById(id); if (el && val) el.value = val; };
+    set('m-name', c.name); set('m-biz', c.biz); set('m-tel', c.phone);
+    set('m-sender', c.sales_by); set('m-price', c.price);
+    set('m-account', c.id);
+    set('m-date', new Date().toISOString().split('T')[0]);
+    if (c.service) {
+      const mSvc = document.getElementById('m-service');
+      if (mSvc) [...mSvc.options].forEach(o => { if (o.text === c.service) o.selected = true; });
+    }
+
+    // Tab จดบริษัท
+    set('c-contact', c.name); set('c-sender', c.sales_by);
+
+    // Tab ยื่นภาษี
+    set('a-name', c.name); set('a-sender', c.sales_by);
+    set('a-line', c.social_id);
+
+    // Banner แจ้ง
+    const banner = document.createElement('div');
+    banner.style.cssText = 'background:#E1F5EE;border:1.5px solid #5DCAA5;border-radius:10px;padding:10px 14px;margin:12px 16px 0;font-size:13px;color:#0F6E56;font-weight:600;';
+    banner.textContent = '✅ ดึงข้อมูลลูกค้าอัตโนมัติแล้วค่ะ กรุณาตรวจสอบและกรอกเพิ่มเติม';
+    const tabs = document.querySelector('.type-tabs');
+    if (tabs) tabs.insertAdjacentElement('afterend', banner);
+    setTimeout(() => banner.remove(), 6000);
+  }, 300);
+}
+
+function setType(t, el) {
+  curType = t;
+  document.querySelectorAll('.type-tab').forEach(b => b.classList.remove('active'));
+  el.classList.add('active');
+  ['monthly','company','annual'].forEach(x => {
+    document.getElementById('form-'+x).classList.toggle('hidden', x !== t);
+  });
+}
+
+function pickR(el, group, val) {
+  el.closest('.radio-group').querySelectorAll('.radio-btn').forEach(b => b.classList.remove('selected'));
+  el.classList.add('selected');
+  radios[group] = val;
+}
+
+let dirCount = 1;
+function addDirector() {
+  dirCount++;
+  const wrap = document.getElementById('c-directors-wrap');
+  const box = document.createElement('div');
+  box.className = 'person-box';
+  box.innerHTML = `<div class="person-title">กรรมการที่ ${dirCount}</div>
+    <div class="field"><label>ชื่อ-นามสกุล</label><input type="text" class="c-dir-name" placeholder="ชื่อ นามสกุล"/></div>
+    <div class="grid2">
+      <div class="field"><label>เบอร์โทร</label><input type="text" class="c-dir-tel" placeholder="08X-XXX-XXXX"/></div>
+      <div class="field"><label>อีเมล</label><input type="text" class="c-dir-email" placeholder="email@..."/></div>
+    </div>`;
+  wrap.appendChild(box);
+}
+
+let shCount = 1;
+function addShareholder() {
+  shCount++;
+  const wrap = document.getElementById('c-shareholders-wrap');
+  const box = document.createElement('div');
+  box.className = 'person-box';
+  box.innerHTML = `<div class="person-title">ผู้ถือหุ้นที่ ${shCount}</div>
+    <div class="field"><label>ชื่อ-นามสกุล</label><input type="text" class="c-sh-name" placeholder="ชื่อ นามสกุล"/></div>
+    <div class="grid2">
+      <div class="field"><label>สัดส่วน (%)</label><input type="number" class="c-sh-shares" placeholder="50"/></div>
+      <div class="field"><label>เบอร์โทร</label><input type="text" class="c-sh-tel" placeholder="08X-XXX-XXXX"/></div>
+    </div>`;
+  wrap.appendChild(box);
+}
+
+function getChecked(containerId) {
+  return [...document.querySelectorAll('#'+containerId+' input[type=checkbox]:checked')].map(c => c.value);
+}
+
+async function submitSec() {
+  const btn = document.getElementById('btnSubmit');
+  btn.textContent = '⏳ กำลังส่ง...';
+  btn.disabled = true;
+
+  let data = { form_type: curType, submitted_by: secName };
+
+  if (curType === 'monthly') {
+    const name = document.getElementById('m-name').value.trim();
+    if (!name) { alert('กรุณากรอกชื่อลูกค้าค่ะ'); btn.textContent='📤 ส่งต่อทีมบัญชี'; btn.disabled=false; return; }
+    const service = document.getElementById('m-service').value;
+    if (!service) { alert('กรุณาเลือกประเภทบริการค่ะ'); btn.textContent='📤 ส่งต่อทีมบัญชี'; btn.disabled=false; return; }
+    data = { ...data, name, biz: document.getElementById('m-biz').value, date: document.getElementById('m-date').value,
+      account_id: document.getElementById('m-account').value, tel: document.getElementById('m-tel').value,
+      service, detail: document.getElementById('m-detail').value,
+      price: document.getElementById('m-price').value, pay_status: document.getElementById('m-pay').value,
+      doc_type: radios['m-doctype']||'', note: document.getElementById('m-note').value,
+      sender: document.getElementById('m-sender').value, receiver: document.getElementById('m-receiver').value };
+
+  } else if (curType === 'company') {
+    const contact = document.getElementById('c-contact').value.trim();
+    if (!contact) { alert('กรุณากรอกชื่อผู้ติดต่อค่ะ'); btn.textContent='📤 ส่งต่อทีมบัญชี'; btn.disabled=false; return; }
+    const directors = [...document.querySelectorAll('.c-dir-name')].map((el,i) => ({
+      name: el.value, tel: document.querySelectorAll('.c-dir-tel')[i]?.value||'', email: document.querySelectorAll('.c-dir-email')[i]?.value||''
+    })).filter(d => d.name);
+    const shareholders = [...document.querySelectorAll('.c-sh-name')].map((el,i) => ({
+      name: el.value, shares: document.querySelectorAll('.c-sh-shares')[i]?.value||'', tel: document.querySelectorAll('.c-sh-tel')[i]?.value||''
+    })).filter(s => s.name);
+    data = { ...data, contact, company_name: document.getElementById('c-company').value,
+      address: document.getElementById('c-address').value, vat: radios['c-vat']||'',
+      social: radios['c-social']||'', capital: document.getElementById('c-capital').value,
+      capital_pct: document.getElementById('c-capital-pct').value,
+      authority: document.getElementById('c-authority').value,
+      obj1: document.getElementById('c-obj1').value, obj2: document.getElementById('c-obj2').value,
+      directors, shareholders,
+      sender: document.getElementById('c-sender').value, receiver: document.getElementById('c-receiver').value };
+
+  } else {
+    const taxName = document.getElementById('a-name').value.trim();
+    if (!taxName) { alert('กรุณากรอกชื่อผู้เสียภาษีค่ะ'); btn.textContent='📤 ส่งต่อทีมบัญชี'; btn.disabled=false; return; }
+    data = { ...data, tax_name: taxName, marital: document.getElementById('a-marital').value,
+      filed_before: radios['a-filed']||'', prev_user: document.getElementById('a-prev-user').value,
+      incomes: getChecked('a-income-checks'), deductions: getChecked('a-deduction-checks'),
+      has_statement: radios['a-statement']||'', income_note: document.getElementById('a-income-note').value,
+      line_acc: document.getElementById('a-line').value,
+      sender: document.getElementById('a-sender').value, receiver: document.getElementById('a-receiver').value };
+  }
+
+  try {
+    const res = await fetch(`${API}/api/sec-forms`, {
+      method: 'POST', headers: { 'Content-Type': 'application/json' },
+      body: JSON.stringify(data)
+    });
+    const result = await res.json();
+    console.log('sec form saved:', result);
+
+    // แจ้งเลขาว่าส่งใบรับงานสำเร็จ
+    const custNameSec = data.name || data.contact || data.tax_name || 'ลูกค้าใหม่';
+    await fetch(`${API}/api/sec-notify`, {
+      method: 'POST', headers: { 'Content-Type': 'application/json' },
+      body: JSON.stringify({ sec_name: secName, cust_name: custNameSec, form_type: curType })
+    }).catch(()=>{});
+
+    document.getElementById('stepSuccess').classList.remove('hidden');
+    document.getElementById('footer').classList.add('hidden');
+    document.querySelectorAll('#form-monthly,#form-company,#form-annual').forEach(f => f.classList.add('hidden'));
+    document.getElementById('typeTabs').classList.add('hidden');
+  } catch(err) {
+    btn.textContent = '📤 ส่งต่อทีมบัญชี';
+    btn.disabled = false;
+    alert('เกิดข้อผิดพลาด: ' + err.message);
+  }
+}
+</script>
+</body>
+</html>
