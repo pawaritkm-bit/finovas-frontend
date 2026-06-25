@@ -496,7 +496,9 @@ async function submitForm(){
 
     await fetch(`${API}/api/ai/summarize-deal`,{
       method:'POST',headers:{'Content-Type':'application/json'},
-      body:JSON.stringify({name,biz,service:svcData.map(s=>s.name).join(', '),
+      body:JSON.stringify({
+        customer_id:data.id||'',
+        name,biz,service:svcData.map(s=>s.name).join(', '),
         price:totalPrice,paid,sales_by:salesBy,
         services:svcData,
         concern:document.getElementById('concern').value,
