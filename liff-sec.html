@@ -344,10 +344,9 @@ liff.init({ liffId: '2010493797-WgCFfbys' }).then(async () => {
   const custId = params.get('cust_id');
   if (custId) {
     try {
-      const res = await fetch(`${API}/api/customers`);
-      const custs = await res.json();
-      const cust = custs.find(c => c.id === custId);
-      if (cust) prefillForm(cust);
+      const res = await fetch(`${API}/api/customers/${custId}`);
+      const cust = await res.json();
+      if (cust && cust.id) prefillForm(cust);
     } catch(e) { console.log('prefill error:', e); }
   }
 }).catch(e => console.log('LIFF error:', e));
