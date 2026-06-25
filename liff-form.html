@@ -298,6 +298,11 @@ function addService(){
         <div id="retro-summary-${id}" class="retro-summary hidden"></div>
       </div>
     </div>
+    <div id="slip-box-${id}" class="hidden" style="margin-top:10px;background:rgba(255,255,255,.8);border-radius:10px;padding:12px;border:1.5px solid #00B894;">
+      <div style="font-size:11px;color:#0F6E56;font-weight:700;margin-bottom:8px;">📎 แนบสลิปโอนเงิน (ไม่บังคับ)</div>
+      <input type="file" id="slip-file-${id}" accept="image/*" style="width:100%;font-size:12px;color:#042C53;"/>
+      <div style="font-size:10px;color:#8B8BAD;margin-top:4px;">รองรับ JPG, PNG ขนาดไม่เกิน 5MB</div>
+    </div>
   `;
   document.getElementById('svcList').appendChild(div);
   services.push({id});
@@ -315,8 +320,10 @@ function pickPay(id,val,el){
   el.classList.add(`sel-${val}`);
   const svc=document.getElementById(`svc-${id}`);
   const retroBox=document.getElementById(`retro-box-${id}`);
+  const slipBox=document.getElementById(`slip-box-${id}`);
   if(val==='retro'){retroBox.classList.remove('hidden');svc.classList.add('retro');svc.style.background='#FFEAEA';svc.style.borderColor='#F09595';}
   else{retroBox.classList.add('hidden');svc.classList.remove('retro');const color=COLORS[(id-1)%COLORS.length];svc.style.background=color+'12';svc.style.borderColor=color+'80';}
+  if(slipBox){if(val==='paid')slipBox.classList.remove('hidden');else slipBox.classList.add('hidden');}
   updateTotal();
 }
 
@@ -336,8 +343,14 @@ function updateTotal(){
   let total=0;
   const tags=[];
   services.forEach(s=>{
-    const payBtn=document.querySelector(`#pay-group-${s.id} .pay-btn.sel-free,#pay-group-${s.id} .pay-btn.sel-paid,#pay-group-${s.id} .pay-btn.sel-unpaid,#pay-group-${s.id} .pay-btn.sel-retro`);
-    const payVal=payBtn?.classList.contains('sel-retro')?'retro':payBtn?.classList.contains('sel-paid')?'paid':payBtn?.classList.contains('sel-free')?'free':'unpaid';
+    const group=document.getElementById(`pay-group-${s.id}`);
+    const btns=group?group.querySelectorAll('.pay-btn'):[];
+    let payVal='unpaid';
+    btns.forEach(b=>{
+      if(b.classList.contains('sel-paid')) payVal='paid';
+      else if(b.classList.contains('sel-free')) payVal='free';
+      else if(b.classList.contains('sel-retro')) payVal='retro';
+    });
     const price=payVal==='retro'?parseInt(document.getElementById(`retro-price-${s.id}`)?.value||0):parseInt(document.getElementById(`svc-price-${s.id}`)?.value||0);
     if(!isNaN(price))total+=price;
     if(payVal==='free')tags.push('🎁 ฟรีเดือนแรก');
@@ -388,8 +401,14 @@ async function submitForm(){
 
   // Collect services
   const svcData=services.map(s=>{
-    const payBtn=document.querySelector(`#pay-group-${s.id} .pay-btn.sel-free,#pay-group-${s.id} .pay-btn.sel-paid,#pay-group-${s.id} .pay-btn.sel-unpaid,#pay-group-${s.id} .pay-btn.sel-retro`);
-    const payVal=payBtn?.classList.contains('sel-retro')?'retro':payBtn?.classList.contains('sel-paid')?'paid':payBtn?.classList.contains('sel-free')?'free':'unpaid';
+    const group=document.getElementById(`pay-group-${s.id}`);
+    const btns=group?group.querySelectorAll('.pay-btn'):[];
+    let payVal='unpaid';
+    btns.forEach(b=>{
+      if(b.classList.contains('sel-paid')) payVal='paid';
+      else if(b.classList.contains('sel-free')) payVal='free';
+      else if(b.classList.contains('sel-retro')) payVal='retro';
+    });
     return {
       name:document.getElementById(`svc-name-${s.id}`)?.value||'',
       price:parseInt(document.getElementById(`svc-price-${s.id}`)?.value||0),
@@ -417,7 +436,7 @@ async function submitForm(){
         doc_count_est:document.getElementById('docCount').value,
         employees:document.getElementById('employees').value,
         price:totalPrice,paid,docs_ok:selDocs.length>=2,
-        doc_risk:selDocs.length<2?'high':'none',
+        doc_risk:selDocs.length<3?'high':'none',
         concern:document.getElementById('concern').value,
         promise:document.getElementById('promise').value,
         note:document.getElementById('note').value,
