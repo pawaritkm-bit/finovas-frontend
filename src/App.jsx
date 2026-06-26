@@ -759,6 +759,155 @@ function DashboardView({custs}){
   );
 }
 
+
+// ── Feed File Modal (AI แยกประเภทลูกค้า) ──────────────────────────────────────
+function FeedFileModal({onClose,onImport}){
+  const [file,setFile]=React.useState(null);
+  const [rows,setRows]=React.useState([]);
+  const [loading,setLoading]=React.useState(false);
+  const [done,setDone]=React.useState(false);
+  const ANTHROPIC_KEY=''; // Key อยู่ฝั่ง backend แล้ว — ใช้ /api/ai/classify แทน
+
+  function parseCSV(text){
+    const lines=text.trim().split(/\r?\n/);
+    const headers=lines[0].split(',').map(h=>h.trim().replace(/"/g,''));
+    return lines.slice(1).map(line=>{
+      const vals=line.split(',').map(v=>v.trim().replace(/"/g,''));
+      const obj={};
+      headers.forEach((h,i)=>obj[h]=vals[i]||'');
+      return obj;
+    }).filter(r=>Object.values(r).some(v=>v));
+  }
+
+  async function handleFile(e){
+    const f=e.target.files[0];
+    if(!f)return;
+    setFile(f);
+    setLoading(true);
+    setRows([]);
+    const text=await f.text();
+    const rawRows=parseCSV(text).slice(0,50);
+    // AI วิเคราะห์แยกประเภท
+    try{
+      const prompt=`วิเคราะห์รายชื่อลูกค้าต่อไปนี้แล้วตอบเป็น JSON array เท่านั้น ไม่ต้องมีข้อความอื่น แต่ละ item มี field: name(ชื่อ), biz(กิจการ), type("person" สำหรับบุคคล หรือ "company" สำหรับบริษัท/นิติบุคคล), cust_type("monthly"/"company"/"annual" ตามประเภทบริการ ถ้าไม่ชัดให้ใช้ monthly), reason(เหตุผลสั้นๆ ที่แยกประเภทนี้)
+รายชื่อ: ${JSON.stringify(rawRows.map(r=>({name:r.name||r.ชื่อ||r.ชื่อลูกค้า||'',biz:r.biz||r.กิจการ||r.ชื่อกิจการ||'',svc:r.service||r.บริการ||r.ประเภทบริการ||''})))}`;
+      const res=await fetch('https://finovas-crm-production.up.railway.app/api/ai/classify',{
+        method:'POST',
+        headers:{'Content-Type':'application/json'},
+        body:JSON.stringify({prompt})
+      });
+      const data=await res.json();
+      const txt=data.text||'[]';
+      const clean=txt.replace(/```json|```/g,'').trim();
+      const analyzed=JSON.parse(clean);
+      setRows(analyzed.map((r,i)=>({...r,id:Date.now()+i,selected:true})));
+    }catch(e){
+      // fallback: ใช้ rule-based
+      const analyzed=rawRows.map((r,i)=>{
+        const name=r.name||r.ชื่อ||r.ชื่อลูกค้า||'';
+        const biz=r.biz||r.กิจการ||r.ชื่อกิจการ||'';
+        const combined=(name+biz).toLowerCase();
+        const isCompany=/บริษัท|หจก|จำกัด|ร้าน|ห้าง|co\.ltd|company/.test(combined);
+        return {id:Date.now()+i,name,biz,type:isCompany?'company':'person',cust_type:isCompany?'company':'monthly',reason:isCompany?'พบคำนิติบุคคล':'ชื่อบุคคลธรรมดา',selected:true};
+      });
+      setRows(analyzed);
+    }
+    setLoading(false);
+  }
+
+  function toggleRow(id){setRows(r=>r.map(x=>x.id===id?{...x,selected:!x.selected}:x));}
+  function toggleAll(){const allSel=rows.every(r=>r.selected);setRows(r=>r.map(x=>({...x,selected:!allSel})));}
+
+  async function doImport(){
+    const selected=rows.filter(r=>r.selected);
+    if(!selected.length)return;
+    setLoading(true);
+    const API='https://finovas-crm-production.up.railway.app';
+    const imported=[];
+    for(const r of selected){
+      try{
+        const res=await fetch(`${API}/api/customers`,{method:'POST',headers:{'Content-Type':'application/json'},
+          body:JSON.stringify({name:r.name,biz:r.biz,cust_type:r.cust_type,status:'A',source:'ฟีดไฟล์',pipeline_status:'รอโทร'})});
+        const data=await res.json();
+        if(data.id) imported.push(mapCust(data));
+      }catch(e){}
+    }
+    onImport(imported);
+    setDone(true);
+    setLoading(false);
+  }
+
+  const persons=rows.filter(r=>r.type==='person');
+  const companies=rows.filter(r=>r.type==='company');
+
+  return(
+    <div onClick={e=>{if(e.target===e.currentTarget)onClose();}} style={{position:'fixed',inset:0,background:'rgba(30,27,75,.6)',zIndex:300,display:'flex',alignItems:'flex-end',justifyContent:'center'}}>
+      <div style={{background:'#fff',borderRadius:'24px 24px 0 0',padding:'24px 20px',width:'100%',maxWidth:560,maxHeight:'90vh',overflowY:'auto'}}>
+        {done?(
+          <div style={{textAlign:'center',padding:'20px 0'}}>
+            <div style={{fontSize:56,marginBottom:16}}>✅</div>
+            <div style={{fontSize:20,fontWeight:800,color:'#534AB7',marginBottom:8}}>นำเข้าสำเร็จแล้วค่ะ!</div>
+            <div style={{fontSize:14,color:'#8B8BAD',marginBottom:20}}>ลูกค้าปรากฏในรายชื่อแล้วค่ะ</div>
+            <button onClick={onClose} style={{background:'linear-gradient(135deg,#534AB7,#6C5CE7)',color:'#fff',border:'none',borderRadius:12,padding:'13px 32px',fontSize:14,fontWeight:700,cursor:'pointer',fontFamily:'inherit'}}>ปิด</button>
+          </div>
+        ):(
+          <>
+            <div style={{fontSize:18,fontWeight:800,color:'#1E1B4B',marginBottom:4}}>📤 ฟีดไฟล์รายชื่อลูกค้า</div>
+            <div style={{fontSize:13,color:'#8B8BAD',marginBottom:20}}>AI จะแยกบุคคลและบริษัทให้อัตโนมัติค่ะ รองรับ .csv, .xlsx</div>
+            {!rows.length&&!loading&&(
+              <label style={{display:'block',border:'2px dashed #AFA9EC',borderRadius:16,padding:32,textAlign:'center',background:'#F9F8FF',cursor:'pointer',marginBottom:16}}>
+                <div style={{fontSize:36,marginBottom:10}}>📊</div>
+                <div style={{fontSize:16,fontWeight:700,color:'#1E1B4B',marginBottom:6}}>ลากไฟล์มาวางที่นี่</div>
+                <div style={{fontSize:13,color:'#8B8BAD',marginBottom:12}}>หรือกดเพื่อเลือกไฟล์</div>
+                <div style={{display:'inline-block',background:'#EEEBff',border:'1.5px solid #AFA9EC',borderRadius:10,padding:'8px 20px',fontSize:13,fontWeight:600,color:'#534AB7'}}>เลือกไฟล์</div>
+                <input type="file" accept=".csv,.xlsx,.xls" style={{display:'none'}} onChange={handleFile}/>
+              </label>
+            )}
+            {loading&&<div style={{textAlign:'center',padding:'32px 0',color:'#534AB7',fontSize:15,fontWeight:600}}>🤖 AI กำลังวิเคราะห์และแยกประเภท...</div>}
+            {rows.length>0&&(
+              <>
+                <div style={{display:'flex',gap:10,marginBottom:14}}>
+                  <div style={{flex:1,background:'#E6F1FB',border:'1px solid #85B7EB',borderRadius:12,padding:'10px 14px',textAlign:'center'}}>
+                    <div style={{fontSize:11,color:'#0C447C',fontWeight:700,marginBottom:2}}>บุคคลธรรมดา</div>
+                    <div style={{fontSize:22,fontWeight:800,color:'#185FA5'}}>{persons.length}</div>
+                  </div>
+                  <div style={{flex:1,background:'#EEEBff',border:'1px solid #AFA9EC',borderRadius:12,padding:'10px 14px',textAlign:'center'}}>
+                    <div style={{fontSize:11,color:'#3C3489',fontWeight:700,marginBottom:2}}>นิติบุคคล/บริษัท</div>
+                    <div style={{fontSize:22,fontWeight:800,color:'#534AB7'}}>{companies.length}</div>
+                  </div>
+                  <div style={{flex:1,background:'#E1F5EE',border:'1px solid #5DCAA5',borderRadius:12,padding:'10px 14px',textAlign:'center'}}>
+                    <div style={{fontSize:11,color:'#085041',fontWeight:700,marginBottom:2}}>เลือกแล้ว</div>
+                    <div style={{fontSize:22,fontWeight:800,color:'#0F6E56'}}>{rows.filter(r=>r.selected).length}</div>
+                  </div>
+                </div>
+                <div style={{display:'flex',alignItems:'center',justifyContent:'space-between',padding:'8px 12px',background:'#E6F1FB',borderRadius:10,marginBottom:10}}>
+                  <div style={{fontSize:13,color:'#0C447C',fontWeight:600}}>รายชื่อทั้งหมด {rows.length} ราย</div>
+                  <button onClick={toggleAll} style={{fontSize:12,color:'#185FA5',fontWeight:700,background:'none',border:'none',cursor:'pointer',fontFamily:'inherit'}}>{rows.every(r=>r.selected)?'ยกเลิกทั้งหมด':'เลือกทั้งหมด'}</button>
+                </div>
+                <div style={{maxHeight:280,overflowY:'auto',display:'flex',flexDirection:'column',gap:6,marginBottom:16}}>
+                  {rows.map(r=>(
+                    <div key={r.id} onClick={()=>toggleRow(r.id)} style={{display:'flex',alignItems:'center',gap:10,padding:'10px 12px',background:r.selected?'#EEEBff':'#F9F8FF',borderRadius:12,cursor:'pointer',border:`1.5px solid ${r.selected?'#AFA9EC':'transparent'}`}}>
+                      <div style={{width:32,height:32,borderRadius:'50%',background:r.type==='company'?'#EEEBff':'#E6F1FB',color:r.type==='company'?'#3C3489':'#0C447C',display:'flex',alignItems:'center',justifyContent:'center',fontWeight:700,fontSize:12,flexShrink:0}}>{r.name?.slice(0,2)||'?'}</div>
+                      <div style={{flex:1}}>
+                        <div style={{fontSize:14,fontWeight:600,color:'#1E1B4B'}}>{r.name}</div>
+                        <div style={{fontSize:12,color:'#8B8BAD'}}>{r.biz||'-'}</div>
+                      </div>
+                      <span style={{background:r.type==='company'?'#EEEBff':'#E6F1FB',color:r.type==='company'?'#3C3489':'#0C447C',borderRadius:20,padding:'2px 8px',fontSize:11,fontWeight:700,whiteSpace:'nowrap'}}>{r.type==='company'?'🏢 บริษัท':'👤 บุคคล'}</span>
+                      <div style={{width:20,height:20,borderRadius:5,border:'2px solid',borderColor:r.selected?'#534AB7':'#E8E6FF',background:r.selected?'#534AB7':'#fff',display:'flex',alignItems:'center',justifyContent:'center',flexShrink:0,fontSize:11,color:'#fff'}}>{r.selected?'✓':''}</div>
+                    </div>
+                  ))}
+                </div>
+                <button onClick={doImport} style={{background:'linear-gradient(135deg,#534AB7,#6C5CE7)',color:'#fff',border:'none',borderRadius:12,padding:13,fontFamily:'inherit',fontSize:14,fontWeight:700,cursor:'pointer',width:'100%',marginBottom:8}}>📥 นำเข้า {rows.filter(r=>r.selected).length} รายชื่อ</button>
+              </>
+            )}
+            <button onClick={onClose} style={{background:'#F4F3FF',color:'#534AB7',border:'1.5px solid #E8E6FF',borderRadius:12,padding:12,fontFamily:'inherit',fontSize:14,fontWeight:600,cursor:'pointer',width:'100%'}}>ยกเลิก</button>
+          </>
+        )}
+      </div>
+    </div>
+  );
+}
+
 function CRMView({custs,setCusts}){
   const API='https://finovas-crm-production.up.railway.app';
   const [search,setSearch]=useState("");
@@ -770,6 +919,7 @@ function CRMView({custs,setCusts}){
   const [showUpsell,setShowUpsell]=useState(false);
   const [upsellData,setUpsellData]=useState({name:'',price:'',status:'unpaid',trend:'warm',note:''});
   const [saving,setSaving]=useState(false);
+  const [showFeed,setShowFeed]=useState(false);
 
   const PLATFORMS=['Facebook','TikTok','Instagram','Google','Referral','Walk-in','อื่นๆ'];
   const PLATFORM_SOCIAL={Facebook:'ชื่อ Facebook',TikTok:'ชื่อ TikTok',Instagram:'ชื่อ Instagram',Referral:'ชื่อคนที่แนะนำ'};
@@ -787,6 +937,11 @@ function CRMView({custs,setCusts}){
     const matchS=!fStatus||c.status===fStatus;
     return matchQ&&matchT&&matchS;
   });
+
+  function handleImport(imported){
+    if(imported.length) setCusts(p=>[...p,...imported]);
+    setShowFeed(false);
+  }
 
   async function saveCust(){
     setSaving(true);
@@ -1407,6 +1562,342 @@ const API_URL = 'https://finovas-crm-production.up.railway.app';
 
 
 
+
+// ── จัดการนักบัญชี View ────────────────────────────────────────────────────────
+function AccountantView({custs}){
+  const COLORS_A=[
+    {bg:"#EEEBff",color:"#3C3489"},{bg:"#E6F1FB",color:"#0C447C"},
+    {bg:"#E1F5EE",color:"#085041"},{bg:"#FAEEDA",color:"#633806"},
+    {bg:"#FCEBEB",color:"#791F1F"},{bg:"#F0EFF8",color:"#534AB7"}
+  ];
+  const [subTab,setSubTab]=React.useState("assign");
+  const [accountants,setAccountants]=React.useState([
+    {id:1,name:"น้องบี",tel:"089-111-0001",count:48,colorIdx:0},
+    {id:2,name:"น้องแอน",tel:"089-111-0002",count:52,colorIdx:1},
+    {id:3,name:"น้องพิม",tel:"089-111-0003",count:45,colorIdx:2},
+    {id:4,name:"น้องนิด",tel:"089-111-0004",count:39,colorIdx:3},
+  ]);
+  const [customers2,setCustomers2]=React.useState(
+    (custs||[]).map((c,i)=>({id:c.id,name:c.name,biz:c.biz,type:c.type||'monthly',accountant_id:c.accountant_id||null,colorIdx:i%6}))
+  );
+  React.useEffect(()=>{
+    if(custs&&custs.length){
+      setCustomers2(p=>{
+        const existingIds=new Set(p.map(x=>x.id));
+        const newOnes=(custs||[]).filter(c=>!existingIds.has(c.id)).map((c,i)=>({id:c.id,name:c.name,biz:c.biz,type:c.type||'monthly',accountant_id:c.accountant_id||null,colorIdx:(p.length+i)%6}));
+        return newOnes.length?[...p,...newOnes]:p;
+      });
+    }
+  },[custs]);
+  const [selAcctId,setSelAcctId]=React.useState(null);
+  const [selCustIds,setSelCustIds]=React.useState(new Set());
+  const [custFilter,setCustFilter]=React.useState("all");
+  const [custSearch,setCustSearch]=React.useState("");
+  const [manageSearch,setManageSearch]=React.useState("");
+  const [modal,setModal]=React.useState(null); // {type,data}
+  const [newAcct,setNewAcct]=React.useState({name:"",tel:""});
+  const [newCust,setNewCust]=React.useState({name:"",biz:"",tel:"",type:""});
+  const [toast,setToast]=React.useState("");
+  const [nextAId,setNextAId]=React.useState(10);
+  const [nextCId,setNextCId]=React.useState(20);
+  const [previewFile,setPreviewFile]=React.useState(null);
+
+  const showToast=(msg)=>{setToast(msg);setTimeout(()=>setToast(""),2500);};
+  const getTypeLabel=(t)=>t==="monthly"?"รายเดือน":t==="company"?"จดบริษัท":t==="annual"?"ยื่นภาษี":t;
+
+  const filteredCusts=customers2.filter(c=>{
+    const q=custSearch.toLowerCase();
+    const matchQ=!q||c.name.toLowerCase().includes(q)||c.biz.toLowerCase().includes(q);
+    const matchF=custFilter==="all"||(custFilter==="unassigned"&&!c.accountant_id)||c.type===custFilter;
+    return matchQ&&matchF;
+  });
+
+  const toggleCust=(id)=>{
+    const s=new Set(selCustIds);
+    s.has(id)?s.delete(id):s.add(id);
+    setSelCustIds(s);
+  };
+
+  const saveAssignment=()=>{
+    if(!selAcctId){showToast("กรุณาเลือกนักบัญชีก่อนค่ะ");return;}
+    if(selCustIds.size===0){showToast("กรุณาเลือกลูกค้าอย่างน้อย 1 รายค่ะ");return;}
+    const updated=customers2.map(c=>selCustIds.has(c.id)?{...c,accountant_id:selAcctId}:c);
+    setCustomers2(updated);
+    const updatedA=accountants.map(a=>a.id===selAcctId?{...a,count:updated.filter(c=>c.accountant_id===selAcctId).length}:a);
+    setAccountants(updatedA);
+    setSelCustIds(new Set());
+    const acct=accountants.find(a=>a.id===selAcctId);
+    showToast(`✅ ผูกลูกค้าให้${acct?.name}แล้วค่ะ`);
+  };
+
+  const addAcct=()=>{
+    if(!newAcct.name.trim()){showToast("กรุณากรอกชื่อค่ะ");return;}
+    setAccountants([...accountants,{id:nextAId,name:newAcct.name,tel:newAcct.tel,count:0,colorIdx:accountants.length%COLORS_A.length}]);
+    setNextAId(nextAId+1);
+    setNewAcct({name:"",tel:""});
+    setModal(null);
+    showToast(`✅ เพิ่ม${newAcct.name}แล้วค่ะ`);
+  };
+
+  const addCust=()=>{
+    if(!newCust.name.trim()){showToast("กรุณากรอกชื่อค่ะ");return;}
+    const c={id:nextCId,name:newCust.name,biz:newCust.biz||"-",tel:newCust.tel,type:newCust.type||"monthly",accountant_id:selAcctId,colorIdx:customers2.length%COLORS_A.length};
+    setCustomers2([...customers2,c]);
+    if(selAcctId){setAccountants(accountants.map(a=>a.id===selAcctId?{...a,count:a.count+1}:a));}
+    setNextCId(nextCId+1);
+    setNewCust({name:"",biz:"",tel:"",type:""});
+    setModal(null);
+    showToast(`✅ เพิ่ม${newCust.name}แล้วค่ะ`);
+  };
+
+  const confirmDelAcct=(id)=>{
+    setCustomers2(customers2.map(c=>c.accountant_id===id?{...c,accountant_id:null}:c));
+    const acct=accountants.find(a=>a.id===id);
+    setAccountants(accountants.filter(a=>a.id!==id));
+    if(selAcctId===id){setSelAcctId(null);setSelCustIds(new Set());}
+    setModal(null);
+    showToast(`🗑️ ลบ${acct?.name}ออกแล้วค่ะ`);
+  };
+
+  const confirmUnlink=(custId)=>{
+    const c=customers2.find(x=>x.id===custId);
+    setCustomers2(customers2.map(x=>x.id===custId?{...x,accountant_id:null}:x));
+    setAccountants(accountants.map(a=>a.id===c?.accountant_id?{...a,count:Math.max(0,a.count-1)}:a));
+    setModal(null);
+    showToast("👤 เอาออกจากนักบัญชีแล้วค่ะ");
+  };
+
+  const confirmDelCust=(custId)=>{
+    const c=customers2.find(x=>x.id===custId);
+    setCustomers2(customers2.filter(x=>x.id!==custId));
+    setAccountants(accountants.map(a=>a.id===c?.accountant_id?{...a,count:Math.max(0,a.count-1)}:a));
+    setModal(null);
+    showToast(`🗑️ ลบ${c?.name}ออกแล้วค่ะ`);
+  };
+
+  const pill=(txt,active,onClick,extraStyle={})=>(
+    <button onClick={onClick} style={{border:"1.5px solid",borderColor:active?"transparent":"#E8E6FF",borderRadius:20,padding:"6px 14px",fontSize:12,fontWeight:600,cursor:"pointer",background:active?"#534AB7":"#fff",color:active?"#fff":"#8B8BAD",transition:"all .2s",whiteSpace:"nowrap",fontFamily:"inherit",...extraStyle}}>{txt}</button>
+  );
+
+  const subTabs=["assign","manage"];
+  const subLabels=["👥 แบ่งกลุ่มลูกค้า","⚙️ จัดการลูกค้า"];
+
+  return(
+    <div style={{flex:1,overflow:"auto",background:"#F4F3FF"}}>
+      {/* Sub tabs */}
+      <div style={{display:"flex",background:"#fff",borderBottom:"2px solid #E8E6FF",padding:"0 20px",gap:4,overflowX:"auto"}}>
+        {subTabs.map((t,i)=>(
+          <button key={t} onClick={()=>setSubTab(t)} style={{padding:"12px 16px",border:"none",background:"none",fontFamily:"inherit",fontSize:13,fontWeight:500,color:subTab===t?"#534AB7":"#8B8BAD",borderBottom:subTab===t?"3px solid #534AB7":"3px solid transparent",cursor:"pointer",whiteSpace:"nowrap",marginBottom:-2}}>{subLabels[i]}</button>
+        ))}
+      </div>
+
+      <div style={{padding:"16px 20px",maxWidth:900,margin:"0 auto"}}>
+
+        {/* ── TAB: แบ่งกลุ่ม ── */}
+        {subTab==="assign"&&(
+          <>
+            {/* Step 1 */}
+            <Card>
+              <div style={{display:"flex",alignItems:"center",justifyContent:"space-between",marginBottom:14}}>
+                <div style={{fontSize:13,fontWeight:700,color:"#8B8BAD",letterSpacing:.5}}>👤 Step 1 — เลือกนักบัญชี</div>
+                <button onClick={()=>setModal({type:"addAcct"})} style={{background:"#EEEBff",border:"1.5px solid #AFA9EC",borderRadius:8,padding:"5px 12px",fontSize:12,fontWeight:700,color:"#534AB7",cursor:"pointer",fontFamily:"inherit"}}>+ เพิ่มนักบัญชี</button>
+              </div>
+              <div style={{display:"grid",gridTemplateColumns:"repeat(auto-fill,minmax(150px,1fr))",gap:10}}>
+                {accountants.map(a=>{
+                  const cl=COLORS_A[a.colorIdx%COLORS_A.length];
+                  const sel=a.id===selAcctId;
+                  return(
+                    <div key={a.id} onClick={()=>{setSelAcctId(sel?null:a.id);setSelCustIds(new Set());}} style={{background:sel?"#EEEBff":"#F9F8FF",borderRadius:14,padding:14,border:`1.5px solid ${sel?"#534AB7":"#E8E6FF"}`,cursor:"pointer",position:"relative",transition:"all .2s"}}>
+                      <div onClick={e=>{e.stopPropagation();setModal({type:"delAcct",id:a.id});}} style={{position:"absolute",top:10,right:10,width:22,height:22,borderRadius:6,background:"#FCEBEB",border:"1px solid #F09595",display:"flex",alignItems:"center",justifyContent:"center",fontSize:11,cursor:"pointer"}}>🗑️</div>
+                      <div style={{width:38,height:38,borderRadius:"50%",background:cl.bg,color:cl.color,display:"flex",alignItems:"center",justifyContent:"center",fontWeight:700,fontSize:15,marginBottom:8}}>{a.name.slice(2,4)||a.name.slice(0,2)}</div>
+                      <div style={{fontSize:14,fontWeight:700,color:"#1E1B4B",marginBottom:2}}>{a.name}</div>
+                      <div style={{fontSize:12,color:"#8B8BAD"}}>ดูแล {a.count} ราย</div>
+                    </div>
+                  );
+                })}
+                <div onClick={()=>setModal({type:"addAcct"})} style={{background:"#F9F8FF",borderRadius:14,padding:14,border:"2px dashed #E8E6FF",cursor:"pointer",display:"flex",flexDirection:"column",alignItems:"center",justifyContent:"center",gap:8,minHeight:108}}>
+                  <div style={{width:34,height:34,borderRadius:"50%",background:"#EEEBff",display:"flex",alignItems:"center",justifyContent:"center",fontSize:20,color:"#534AB7"}}>+</div>
+                  <div style={{fontSize:13,fontWeight:600,color:"#8B8BAD"}}>เพิ่มนักบัญชี</div>
+                </div>
+              </div>
+            </Card>
+
+            {/* Step 2 */}
+            <Card>
+              <div style={{display:"flex",alignItems:"center",justifyContent:"space-between",marginBottom:14}}>
+                <div style={{fontSize:13,fontWeight:700,color:"#8B8BAD",letterSpacing:.5}}>
+                  {selAcctId?`📋 Step 2 — เลือกลูกค้าให้${accountants.find(a=>a.id===selAcctId)?.name}ดูแล`:"📋 Step 2 — เลือกลูกค้า"}
+                </div>
+                <button onClick={()=>setModal({type:"addCust"})} style={{background:"#EEEBff",border:"1.5px solid #AFA9EC",borderRadius:8,padding:"5px 12px",fontSize:12,fontWeight:700,color:"#534AB7",cursor:"pointer",fontFamily:"inherit"}}>+ เพิ่มลูกค้า</button>
+              </div>
+
+              <div style={{display:"flex",alignItems:"center",gap:10,background:"#F9F8FF",border:"1.5px solid #E8E6FF",borderRadius:12,padding:"10px 14px",marginBottom:12}}>
+                <span style={{fontSize:16,color:"#C4BFEE"}}>🔍</span>
+                <input value={custSearch} onChange={e=>setCustSearch(e.target.value)} placeholder="ค้นหาชื่อลูกค้า หรือกิจการ..." style={{flex:1,border:"none",background:"transparent",fontSize:14,fontFamily:"inherit",outline:"none",color:"#1E1B4B"}}/>
+              </div>
+
+              <div style={{display:"flex",gap:6,flexWrap:"wrap",marginBottom:12}}>
+                {pill(`ทั้งหมด (${customers2.length})`,custFilter==="all",()=>setCustFilter("all"))}
+                {pill(`ไม่มีนักบัญชี (${customers2.filter(c=>!c.accountant_id).length})`,custFilter==="unassigned",()=>setCustFilter("unassigned"),{borderColor:custFilter==="unassigned"?"transparent":"#85B7EB",background:custFilter==="unassigned"?"#185FA5":"#fff",color:custFilter==="unassigned"?"#fff":"#0C447C"})}
+                {pill("รายเดือน",custFilter==="monthly",()=>setCustFilter("monthly"))}
+                {pill("จดบริษัท",custFilter==="company",()=>setCustFilter("company"))}
+                {pill("ยื่นภาษี",custFilter==="annual",()=>setCustFilter("annual"),{borderColor:custFilter==="annual"?"transparent":"#5DCAA5",background:custFilter==="annual"?"#0F6E56":"#fff",color:custFilter==="annual"?"#fff":"#085041"})}
+              </div>
+
+              <div style={{display:"flex",alignItems:"center",justifyContent:"space-between",padding:"10px 14px",background:"#E6F1FB",borderRadius:10,marginBottom:12}}>
+                <div style={{fontSize:13,color:"#0C447C",fontWeight:600}}>เลือกแล้ว {selCustIds.size} ราย</div>
+                <button onClick={()=>{const s=new Set(selCustIds);filteredCusts.forEach(c=>s.add(c.id));setSelCustIds(s);}} style={{fontSize:12,color:"#185FA5",fontWeight:700,cursor:"pointer",background:"none",border:"none",fontFamily:"inherit"}}>เลือกทั้งหมดที่แสดง</button>
+              </div>
+
+              <div style={{display:"flex",flexDirection:"column",gap:6,maxHeight:360,overflowY:"auto"}}>
+                {filteredCusts.map(c=>{
+                  const cl=COLORS_A[c.colorIdx%COLORS_A.length];
+                  const sel=selCustIds.has(c.id);
+                  const acctName=c.accountant_id?(accountants.find(a=>a.id===c.accountant_id)?.name||""):"";
+                  return(
+                    <div key={c.id} onClick={()=>toggleCust(c.id)} style={{display:"flex",alignItems:"center",gap:10,padding:"11px 13px",background:sel?"#EEEBff":"#F9F8FF",borderRadius:12,cursor:"pointer",border:`1.5px solid ${sel?"#AFA9EC":"transparent"}`,transition:"all .15s"}}>
+                      <div style={{width:34,height:34,borderRadius:"50%",background:cl.bg,color:cl.color,display:"flex",alignItems:"center",justifyContent:"center",fontWeight:700,fontSize:13,flexShrink:0}}>{c.name.slice(1,3)}</div>
+                      <div style={{flex:1}}>
+                        <div style={{fontSize:14,fontWeight:600,color:"#1E1B4B"}}>
+                          {c.name}
+                          {acctName&&<span style={{background:"#E6F1FB",color:"#0C447C",borderRadius:20,padding:"2px 8px",fontSize:11,fontWeight:700,marginLeft:6}}>{acctName}</span>}
+                        </div>
+                        <div style={{fontSize:12,color:"#8B8BAD",marginTop:1}}>{c.biz} · {getTypeLabel(c.type)}</div>
+                      </div>
+                      <div style={{width:22,height:22,borderRadius:6,border:"2px solid",borderColor:sel?"#534AB7":"#E8E6FF",background:sel?"#534AB7":"#fff",display:"flex",alignItems:"center",justifyContent:"center",flexShrink:0,fontSize:12,color:"#fff"}}>{sel?"✓":""}</div>
+                    </div>
+                  );
+                })}
+              </div>
+            </Card>
+
+            {selCustIds.size>0&&selAcctId&&(
+              <div style={{background:"linear-gradient(135deg,#E1F5EE,#E8F4FD)",border:"1.5px solid #5DCAA5",borderRadius:12,padding:"12px 16px",marginBottom:14}}>
+                <div style={{fontSize:13,fontWeight:700,color:"#085041",marginBottom:6}}>สรุปก่อนบันทึก</div>
+                <div style={{fontSize:14,color:"#0F6E56"}}>ผูก <strong>{selCustIds.size} ราย</strong> ให้ <strong>{accountants.find(a=>a.id===selAcctId)?.name}</strong> ดูแล</div>
+              </div>
+            )}
+            <button onClick={saveAssignment} style={{background:"linear-gradient(135deg,#534AB7,#6C5CE7)",color:"#fff",border:"none",borderRadius:12,padding:"13px 24px",fontFamily:"inherit",fontSize:14,fontWeight:700,cursor:"pointer",width:"100%",boxShadow:"0 3px 10px rgba(83,74,183,.3)"}}>💾 บันทึกการแบ่งกลุ่ม</button>
+          </>
+        )}
+
+        {/* ฟีดไฟล์ย้ายไปแท็บลูกค้าแล้ว */}
+
+        {/* ── TAB: จัดการลูกค้า ── */}
+        {subTab==="manage"&&(
+          <Card>
+            <div style={{fontSize:13,fontWeight:700,color:"#8B8BAD",letterSpacing:.5,marginBottom:14}}>⚙️ จัดการลูกค้าทั้งหมด</div>
+            <div style={{display:"flex",alignItems:"center",gap:10,background:"#F9F8FF",border:"1.5px solid #E8E6FF",borderRadius:12,padding:"10px 14px",marginBottom:10}}>
+              <span style={{fontSize:16,color:"#C4BFEE"}}>🔍</span>
+              <input value={manageSearch} onChange={e=>setManageSearch(e.target.value)} placeholder="ค้นหาชื่อลูกค้า..." style={{flex:1,border:"none",background:"transparent",fontSize:14,fontFamily:"inherit",outline:"none",color:"#1E1B4B"}}/>
+            </div>
+            <div style={{display:"flex",gap:14,marginBottom:10,fontSize:12,color:"#8B8BAD",flexWrap:"wrap"}}>
+              <div style={{display:"flex",alignItems:"center",gap:5}}><div style={{width:14,height:14,borderRadius:4,background:"#FAEEDA",border:"1px solid #EF9F27"}}></div>เอาออกจากนักบัญชี</div>
+              <div style={{display:"flex",alignItems:"center",gap:5}}><div style={{width:14,height:14,borderRadius:4,background:"#FCEBEB",border:"1px solid #F09595"}}></div>ลบออกจากระบบถาวร</div>
+            </div>
+            <div style={{display:"flex",flexDirection:"column",gap:6,maxHeight:500,overflowY:"auto"}}>
+              {customers2.filter(c=>!manageSearch||c.name.toLowerCase().includes(manageSearch.toLowerCase())||c.biz.toLowerCase().includes(manageSearch.toLowerCase())).map(c=>{
+                const cl=COLORS_A[c.colorIdx%COLORS_A.length];
+                const acct=accountants.find(a=>a.id===c.accountant_id);
+                return(
+                  <div key={c.id} style={{display:"flex",alignItems:"center",gap:8,padding:"11px 13px",background:"#F9F8FF",borderRadius:12}}>
+                    <div style={{width:34,height:34,borderRadius:"50%",background:cl.bg,color:cl.color,display:"flex",alignItems:"center",justifyContent:"center",fontWeight:700,fontSize:13,flexShrink:0}}>{c.name.slice(1,3)}</div>
+                    <div style={{flex:1}}>
+                      <div style={{fontSize:14,fontWeight:600,color:"#1E1B4B"}}>
+                        {c.name}
+                        {acct&&<span style={{background:"#E6F1FB",color:"#0C447C",borderRadius:20,padding:"2px 8px",fontSize:11,fontWeight:700,marginLeft:6}}>{acct.name}</span>}
+                      </div>
+                      <div style={{fontSize:12,color:"#8B8BAD",marginTop:1}}>{c.biz} · {getTypeLabel(c.type)}</div>
+                    </div>
+                    {acct&&<div onClick={()=>setModal({type:"unlink",id:c.id})} style={{width:28,height:28,borderRadius:8,background:"#FAEEDA",border:"1px solid #EF9F27",display:"flex",alignItems:"center",justifyContent:"center",flexShrink:0,cursor:"pointer",fontSize:14}}>👤</div>}
+                    <div onClick={()=>setModal({type:"delCust",id:c.id})} style={{width:28,height:28,borderRadius:8,background:"#FCEBEB",border:"1px solid #F09595",display:"flex",alignItems:"center",justifyContent:"center",flexShrink:0,cursor:"pointer",fontSize:14}}>🗑️</div>
+                  </div>
+                );
+              })}
+            </div>
+          </Card>
+        )}
+
+      </div>
+
+      {/* ── Modals ── */}
+      {modal&&(
+        <div onClick={e=>{if(e.target===e.currentTarget)setModal(null);}} style={{position:"fixed",inset:0,background:"rgba(30,27,75,.5)",zIndex:200,display:"flex",alignItems:"flex-end",justifyContent:"center"}}>
+          <div style={{background:"#fff",borderRadius:"24px 24px 0 0",padding:"24px 20px",width:"100%",maxWidth:500,maxHeight:"90vh",overflowY:"auto"}}>
+
+            {/* เพิ่มนักบัญชี */}
+            {modal.type==="addAcct"&&(
+              <>
+                <div style={{fontSize:18,fontWeight:800,color:"#1E1B4B",marginBottom:6}}>เพิ่มนักบัญชีใหม่</div>
+                <div style={{fontSize:13,color:"#8B8BAD",marginBottom:20}}>กรอกข้อมูลนักบัญชีที่ต้องการเพิ่ม</div>
+                <div style={{marginBottom:14}}><label style={{fontSize:13,fontWeight:700,color:"#534AB7",display:"block",marginBottom:6}}>ชื่อนักบัญชี *</label><input value={newAcct.name} onChange={e=>setNewAcct({...newAcct,name:e.target.value})} placeholder="เช่น น้องนุ่น" style={{width:"100%",border:"1.5px solid #E8E6FF",borderRadius:12,padding:"12px 14px",fontSize:14,fontFamily:"inherit",outline:"none",background:"#F9F8FF",color:"#1E1B4B"}}/></div>
+                <div style={{marginBottom:14}}><label style={{fontSize:13,fontWeight:700,color:"#534AB7",display:"block",marginBottom:6}}>เบอร์โทร</label><input value={newAcct.tel} onChange={e=>setNewAcct({...newAcct,tel:e.target.value})} placeholder="08X-XXX-XXXX" type="tel" style={{width:"100%",border:"1.5px solid #E8E6FF",borderRadius:12,padding:"12px 14px",fontSize:14,fontFamily:"inherit",outline:"none",background:"#F9F8FF",color:"#1E1B4B"}}/></div>
+                <div style={{background:"#E1F5EE",border:"1.5px solid #5DCAA5",borderRadius:12,padding:"12px 14px",marginBottom:16,fontSize:13,color:"#085041"}}>💡 LINE ID จะดึงอัตโนมัติเมื่อนักบัญชีส่งข้อความใน LINE OA บัญชีครั้งแรกค่ะ</div>
+                <button onClick={addAcct} style={{background:"linear-gradient(135deg,#534AB7,#6C5CE7)",color:"#fff",border:"none",borderRadius:12,padding:13,fontFamily:"inherit",fontSize:14,fontWeight:700,cursor:"pointer",width:"100%"}}>+ เพิ่มนักบัญชี</button>
+                <button onClick={()=>setModal(null)} style={{background:"#F4F3FF",color:"#534AB7",border:"1.5px solid #E8E6FF",borderRadius:12,padding:12,fontFamily:"inherit",fontSize:14,fontWeight:600,cursor:"pointer",width:"100%",marginTop:8}}>ยกเลิก</button>
+              </>
+            )}
+
+            {/* เพิ่มลูกค้า */}
+            {modal.type==="addCust"&&(
+              <>
+                <div style={{fontSize:18,fontWeight:800,color:"#1E1B4B",marginBottom:6}}>เพิ่มลูกค้าใหม่</div>
+                <div style={{fontSize:13,color:"#8B8BAD",marginBottom:20}}>กรอกข้อมูลลูกค้าที่ต้องการเพิ่มเข้าระบบ</div>
+                {["ชื่อลูกค้า *:name:คุณ...","ชื่อกิจการ:biz:บริษัท / ร้านค้า...","เบอร์ติดต่อ *:tel:08X-XXX-XXXX"].map(f=>{
+                  const [label,key,ph]=f.split(":");
+                  return(<div key={key} style={{marginBottom:14}}><label style={{fontSize:13,fontWeight:700,color:"#534AB7",display:"block",marginBottom:6}}>{label}</label><input value={newCust[key]} onChange={e=>setNewCust({...newCust,[key]:e.target.value})} placeholder={ph} style={{width:"100%",border:"1.5px solid #E8E6FF",borderRadius:12,padding:"12px 14px",fontSize:14,fontFamily:"inherit",outline:"none",background:"#F9F8FF",color:"#1E1B4B"}}/></div>);
+                })}
+                <div style={{marginBottom:14}}><label style={{fontSize:13,fontWeight:700,color:"#534AB7",display:"block",marginBottom:6}}>ประเภทบริการ</label><select value={newCust.type} onChange={e=>setNewCust({...newCust,type:e.target.value})} style={{width:"100%",border:"1.5px solid #E8E6FF",borderRadius:12,padding:"12px 14px",fontSize:14,fontFamily:"inherit",outline:"none",background:"#F9F8FF",color:"#1E1B4B"}}><option value="">-- เลือกบริการ --</option><option value="monthly">บัญชีรายเดือน</option><option value="company">จดบริษัท</option><option value="annual">ยื่นภาษี</option></select></div>
+                {selAcctId&&<div style={{background:"#E1F5EE",border:"1.5px solid #5DCAA5",borderRadius:12,padding:"12px 14px",marginBottom:16,fontSize:13,color:"#085041"}}>💡 จะผูกกับ{accountants.find(a=>a.id===selAcctId)?.name}โดยอัตโนมัติ</div>}
+                <button onClick={addCust} style={{background:"linear-gradient(135deg,#534AB7,#6C5CE7)",color:"#fff",border:"none",borderRadius:12,padding:13,fontFamily:"inherit",fontSize:14,fontWeight:700,cursor:"pointer",width:"100%"}}>+ เพิ่มลูกค้า</button>
+                <button onClick={()=>setModal(null)} style={{background:"#F4F3FF",color:"#534AB7",border:"1.5px solid #E8E6FF",borderRadius:12,padding:12,fontFamily:"inherit",fontSize:14,fontWeight:600,cursor:"pointer",width:"100%",marginTop:8}}>ยกเลิก</button>
+              </>
+            )}
+
+            {/* ลบนักบัญชี */}
+            {modal.type==="delAcct"&&(()=>{
+              const acct=accountants.find(a=>a.id===modal.id);
+              const cnt=customers2.filter(c=>c.accountant_id===modal.id).length;
+              return(<>
+                <div style={{fontSize:18,fontWeight:800,color:"#1E1B4B",marginBottom:16}}>ลบนักบัญชีออกจากระบบ?</div>
+                <div style={{background:"#FCEBEB",border:"1.5px solid #F09595",borderRadius:12,padding:"12px 14px",marginBottom:16,fontSize:13,color:"#791F1F",lineHeight:1.7,display:"flex",alignItems:"flex-start",gap:10}}><span style={{fontSize:18,flexShrink:0}}>⚠️</span><div>ลบ <strong>{acct?.name}</strong> ออกถาวร ลูกค้า <strong>{cnt} ราย</strong> ที่ดูแลอยู่จะไม่มีนักบัญชีดูแล ต้องแบ่งใหม่ทีหลังค่ะ</div></div>
+                <div style={{display:"flex",gap:10}}><button onClick={()=>confirmDelAcct(modal.id)} style={{flex:1,background:"linear-gradient(135deg,#D63031,#E74C3C)",color:"#fff",border:"none",borderRadius:12,padding:13,fontFamily:"inherit",fontSize:14,fontWeight:700,cursor:"pointer"}}>🗑️ ยืนยันลบ</button><button onClick={()=>setModal(null)} style={{flex:1,background:"#F4F3FF",color:"#534AB7",border:"1.5px solid #E8E6FF",borderRadius:12,padding:12,fontFamily:"inherit",fontSize:14,fontWeight:600,cursor:"pointer"}}>ยกเลิก</button></div>
+              </>);
+            })()}
+
+            {/* เอาลูกค้าออกจากนักบัญชี */}
+            {modal.type==="unlink"&&(()=>{
+              const c=customers2.find(x=>x.id===modal.id);
+              const acct=accountants.find(a=>a.id===c?.accountant_id);
+              return(<>
+                <div style={{fontSize:18,fontWeight:800,color:"#1E1B4B",marginBottom:16}}>เอาลูกค้าออกจากนักบัญชี?</div>
+                <div style={{background:"#FFF8E1",border:"1.5px solid #EF9F27",borderRadius:12,padding:"12px 14px",marginBottom:16,fontSize:13,color:"#633806",lineHeight:1.7,display:"flex",alignItems:"flex-start",gap:10}}><span style={{fontSize:18,flexShrink:0}}>ℹ️</span><div><strong>{c?.name}</strong> จะไม่อยู่ในความดูแลของ<strong>{acct?.name}</strong>อีกต่อไป แต่ยังคงอยู่ในระบบ CRM ค่ะ</div></div>
+                <button onClick={()=>confirmUnlink(modal.id)} style={{width:"100%",background:"linear-gradient(135deg,#EF9F27,#FDCB6E)",color:"#412402",border:"none",borderRadius:12,padding:13,fontFamily:"inherit",fontSize:14,fontWeight:700,cursor:"pointer"}}>👤 ยืนยันเอาออก</button>
+                <button onClick={()=>setModal(null)} style={{background:"#F4F3FF",color:"#534AB7",border:"1.5px solid #E8E6FF",borderRadius:12,padding:12,fontFamily:"inherit",fontSize:14,fontWeight:600,cursor:"pointer",width:"100%",marginTop:8}}>ยกเลิก</button>
+              </>);
+            })()}
+
+            {/* ลบลูกค้าถาวร */}
+            {modal.type==="delCust"&&(()=>{
+              const c=customers2.find(x=>x.id===modal.id);
+              return(<>
+                <div style={{fontSize:18,fontWeight:800,color:"#1E1B4B",marginBottom:16}}>ลบลูกค้าออกจากระบบถาวร?</div>
+                <div style={{background:"#FCEBEB",border:"1.5px solid #F09595",borderRadius:12,padding:"12px 14px",marginBottom:16,fontSize:13,color:"#791F1F",lineHeight:1.7,display:"flex",alignItems:"flex-start",gap:10}}><span style={{fontSize:18,flexShrink:0}}>⚠️</span><div>ลบ <strong>{c?.name}</strong> ออกถาวร ข้อมูล CRM ใบรับงาน และประวัติทั้งหมดจะหายไปค่ะ ไม่สามารถกู้คืนได้</div></div>
+                <button onClick={()=>confirmDelCust(modal.id)} style={{width:"100%",background:"linear-gradient(135deg,#D63031,#E74C3C)",color:"#fff",border:"none",borderRadius:12,padding:13,fontFamily:"inherit",fontSize:14,fontWeight:700,cursor:"pointer"}}>🗑️ ยืนยันลบถาวร</button>
+                <button onClick={()=>setModal(null)} style={{background:"#F4F3FF",color:"#534AB7",border:"1.5px solid #E8E6FF",borderRadius:12,padding:12,fontFamily:"inherit",fontSize:14,fontWeight:600,cursor:"pointer",width:"100%",marginTop:8}}>ยกเลิก</button>
+              </>);
+            })()}
+
+          </div>
+        </div>
+      )}
+
+      {/* Toast */}
+      {toast&&<div style={{position:"fixed",bottom:24,left:"50%",transform:"translateX(-50%)",background:"#1E1B4B",color:"#fff",padding:"12px 24px",borderRadius:12,fontSize:14,fontWeight:600,zIndex:999,whiteSpace:"nowrap"}}>{toast}</div>}
+    </div>
+  );
+}
+
 export default function App(){
   const [tab,setTab]=useState("db");
   const [custs,setCusts]=useState([]);
@@ -1438,12 +1929,13 @@ export default function App(){
   const totalRev=custs.filter(c=>c.paid).reduce((s,c)=>s+c.price,0);
 
   const MAIN_NAV=[
-    {id:"db",    label:"Dashboard", icon:"▦"},
-    {id:"crm",   label:"ลูกค้า",    icon:"👥"},
-    {id:"pipe",  label:"Pipeline",  icon:"🎯"},
-    {id:"tgt",   label:"เป้าเซลล์",  icon:"📈"},
-    {id:"churn", label:"Churn",     icon:"❌"},
-    {id:"forms", label:"ใบรับงาน",   icon:"📄"},
+    {id:"db",    label:"Dashboard",   icon:"▦"},
+    {id:"crm",   label:"ลูกค้า",      icon:"👥"},
+    {id:"pipe",  label:"Pipeline",    icon:"🎯"},
+    {id:"tgt",   label:"เป้าเซลล์",   icon:"📈"},
+    {id:"churn", label:"Churn",       icon:"❌"},
+    {id:"forms", label:"ใบรับงาน",    icon:"📄"},
+    {id:"acct",  label:"นักบัญชี",    icon:"🧑‍💼"},
   ];
 
   const tabLabel=MAIN_NAV.find(n=>n.id===tab)?.label||"";
@@ -1535,6 +2027,7 @@ export default function App(){
           {tab==="tgt"   && <TargetsView/>}
           {tab==="churn" && <ChurnView/>}
           {tab==="forms" && <SecFormsView/>}
+          {tab==="acct"  && <AccountantView custs={custs}/>}
         </div>
 
         {/* Bottom nav — mobile */}
