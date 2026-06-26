@@ -8,74 +8,49 @@
 <style>
 *{box-sizing:border-box;margin:0;padding:0;-webkit-tap-highlight-color:transparent}
 body{font-family:-apple-system,BlinkMacSystemFont,'Segoe UI',Sarabun,sans-serif;background:#F4F3FF;min-height:100vh;padding-bottom:100px}
-
-/* Header */
 .header{background:linear-gradient(135deg,#1E1B4B,#534AB7);color:#fff;padding:16px 18px;position:sticky;top:0;z-index:10;display:flex;align-items:center;gap:12px;box-shadow:0 2px 8px rgba(30,27,75,.3)}
 .logo{width:38px;height:38px;background:rgba(255,255,255,.15);border-radius:10px;display:flex;align-items:center;justify-content:center;font-weight:900;font-size:16px;color:#fff;flex-shrink:0}
 .header-title{font-size:15px;font-weight:700;letter-spacing:-.3px}
 .header-sub{font-size:11px;color:rgba(255,255,255,.6);margin-top:2px}
-
-/* Type Tabs */
 .type-tabs{display:flex;background:#fff;border-bottom:2px solid #E8E6FF;padding:0 8px;gap:4px}
-.type-tab{flex:1;padding:14px 4px;border:none;background:none;font-family:inherit;font-size:12px;font-weight:500;color:#8B8BAD;border-bottom:3px solid transparent;cursor:pointer;display:flex;flex-direction:column;align-items:center;gap:4px;margin-bottom:-2px;transition:all .2s}
-.type-tab.active{color:#534AB7;border-bottom-color:#534AB7;font-weight:700}
+.type-tab{flex:1;border:1.5px solid;border-radius:12px;padding:12px 4px;font-family:inherit;font-size:13px;font-weight:600;cursor:pointer;display:flex;flex-direction:column;align-items:center;gap:4px;transition:all .2s;margin:0;}
+.type-tabs{gap:8px;padding:12px 14px;background:#F9F8FF;border-bottom:none;}
+.type-tab:nth-child(1){background:linear-gradient(135deg,#E8F4FD,#D6ECFF);color:#0C447C;border-color:#85B7EB;}
+.type-tab:nth-child(2){background:linear-gradient(135deg,#EEEBff,#E4E0FF);color:#3C3489;border-color:#AFA9EC;}
+.type-tab:nth-child(3){background:linear-gradient(135deg,#E0FAF4,#C8F5E8);color:#085041;border-color:#5DCAA5;}
+.type-tab:nth-child(1).active{background:linear-gradient(135deg,#0984E3,#55EFC4);border-color:transparent;color:#fff;box-shadow:0 3px 10px rgba(9,132,227,.3);}
+.type-tab:nth-child(2).active{background:linear-gradient(135deg,#534AB7,#A29BFE);border-color:transparent;color:#fff;box-shadow:0 3px 10px rgba(83,74,183,.3);}
+.type-tab:nth-child(3).active{background:linear-gradient(135deg,#00B894,#55EFC4);border-color:transparent;color:#04342C;box-shadow:0 3px 10px rgba(0,184,148,.3);}
 .type-icon{font-size:20px}
-
-/* Fields */
 .section{padding:16px 16px 0}
 .section-label{font-size:11px;font-weight:700;color:#fff;background:#534AB7;border-radius:6px;padding:4px 12px;margin-bottom:12px;display:inline-block;letter-spacing:.5px}
 .field{margin-bottom:14px}
 .field label{font-size:13px;font-weight:600;color:#1E1B4B;margin-bottom:6px;display:block}
 .field label .req{color:#D63031}
-.field input[type=text],
-.field input[type=number],
-.field input[type=date],
-.field textarea,
-.field select{width:100%;border:1.5px solid #E8E6FF;border-radius:10px;padding:12px 14px;font-size:14px;font-family:inherit;outline:none;background:#fff;color:#1E1B4B;transition:border .2s}
+.field input[type=text],.field input[type=number],.field input[type=date],.field textarea,.field select{width:100%;border:1.5px solid #E8E6FF;border-radius:10px;padding:12px 14px;font-size:14px;font-family:inherit;outline:none;background:#fff;color:#1E1B4B;transition:border .2s}
 .field input:focus,.field textarea:focus,.field select:focus{border-color:#534AB7;box-shadow:0 0 0 3px rgba(83,74,183,.1)}
 .field select{background-image:url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='12' height='8' viewBox='0 0 12 8'%3E%3Cpath d='M1 1l5 5 5-5' stroke='%238B8BAD' stroke-width='1.5' fill='none' stroke-linecap='round'/%3E%3C/svg%3E");background-repeat:no-repeat;background-position:right 14px center;padding-right:36px;appearance:none;-webkit-appearance:none}
 .field textarea{resize:vertical;min-height:80px;line-height:1.6}
 .grid2{display:grid;grid-template-columns:1fr 1fr;gap:10px}
-
-/* Radio */
 .radio-group{display:flex;gap:8px;flex-wrap:wrap}
 .radio-btn{flex:1;min-width:80px;border:1.5px solid #E8E6FF;border-radius:10px;padding:10px 8px;font-size:13px;text-align:center;cursor:pointer;background:#fff;color:#8B8BAD;font-family:inherit;transition:all .2s;font-weight:500}
 .radio-btn.selected{border-color:#534AB7;background:#EEEBff;color:#534AB7;font-weight:700}
-
-/* Checkbox */
 .check-item{display:flex;align-items:center;gap:10px;padding:12px 0;border-bottom:1px solid #F0EFF8;cursor:pointer}
 .check-item:last-child{border-bottom:none}
 .check-item input[type=checkbox]{width:20px;height:20px;accent-color:#534AB7;flex-shrink:0;cursor:pointer}
 .check-item span{font-size:13px;color:#1E1B4B;line-height:1.5;font-weight:500}
-
-/* Info Box */
-.info-box{background:#EEEBff;border:1.5px solid #534AB750;border-radius:12px;padding:12px 14px;margin-bottom:14px}
-.info-box .info-title{font-size:11px;color:#8B8BAD;margin-bottom:4px;font-weight:600}
-.info-box .info-name{font-size:15px;font-weight:700;color:#1E1B4B}
-.info-box .info-sub{font-size:12px;color:#534AB7;margin-top:3px;font-weight:500}
-
-/* Person Box */
 .person-box{background:#F4F3FF;border-radius:10px;padding:12px 14px;margin-bottom:10px;border:1px solid #E8E6FF}
 .person-box .person-title{font-size:11px;font-weight:700;color:#8B8BAD;margin-bottom:10px;letter-spacing:.5px}
-
-/* Warn */
-.warn-box{background:#FFF8E1;border:1.5px solid #FDCB6E60;border-radius:10px;padding:12px 14px;font-size:13px;color:#633806;font-weight:500;margin-bottom:12px}
-
-/* Footer */
 .footer{position:fixed;bottom:0;left:0;right:0;background:#fff;border-top:1px solid #E8E6FF;padding:14px 16px;display:flex;gap:10px;z-index:10;box-shadow:0 -2px 8px rgba(30,27,75,.08)}
-.btn-back{flex:1;background:#F4F3FF;color:#534AB7;border:1.5px solid #E8E6FF;border-radius:12px;padding:14px;font-family:inherit;font-size:14px;font-weight:600;cursor:pointer}
 .btn-next{flex:2;background:linear-gradient(135deg,#534AB7,#6C5CE7);color:#fff;border:none;border-radius:12px;padding:14px;font-family:inherit;font-size:14px;font-weight:700;cursor:pointer;box-shadow:0 3px 10px rgba(83,74,183,.3)}
 .btn-next:disabled{background:#C4C0F0;box-shadow:none;cursor:not-allowed}
-
-/* Success */
 .success{display:flex;flex-direction:column;align-items:center;justify-content:center;min-height:70vh;padding:32px 24px;text-align:center}
 .success-icon{font-size:72px;margin-bottom:20px}
 .success-title{font-size:22px;font-weight:800;color:#534AB7;margin-bottom:10px}
 .success-sub{font-size:14px;color:#8B8BAD;line-height:1.7}
 .hidden{display:none!important}
-
-/* Card */
 .card{background:#fff;border-radius:14px;border:1px solid #E8E6FF;padding:16px;margin-bottom:14px;box-shadow:0 1px 4px rgba(83,74,183,.06)}
+.prefill-banner{background:#E1F5EE;border:1.5px solid #5DCAA5;border-radius:10px;padding:10px 14px;margin:12px 16px 0;font-size:13px;color:#0F6E56;font-weight:600;}
 </style>
 </head>
 <body>
@@ -88,7 +63,6 @@ body{font-family:-apple-system,BlinkMacSystemFont,'Segoe UI',Sarabun,sans-serif;
   </div>
 </div>
 
-<!-- Type Tabs -->
 <div class="type-tabs" id="typeTabs">
   <button class="type-tab active" onclick="setType('monthly',this)">
     <span class="type-icon">📅</span>ทำรายเดือน
@@ -101,7 +75,7 @@ body{font-family:-apple-system,BlinkMacSystemFont,'Segoe UI',Sarabun,sans-serif;
   </button>
 </div>
 
-<!-- ── MONTHLY ────────────────────────────────────── -->
+<!-- MONTHLY -->
 <div id="form-monthly">
   <div class="section">
     <div style="margin-top:8px"></div>
@@ -115,7 +89,6 @@ body{font-family:-apple-system,BlinkMacSystemFont,'Segoe UI',Sarabun,sans-serif;
       </div>
       <div class="field"><label>เบอร์ติดต่อ</label><input type="text" id="m-tel" placeholder="08X-XXX-XXXX"/></div>
     </div>
-
     <div class="card">
       <div class="section-label">💼 รายละเอียดงาน</div>
       <div class="field">
@@ -137,12 +110,11 @@ body{font-family:-apple-system,BlinkMacSystemFont,'Segoe UI',Sarabun,sans-serif;
           <select id="m-pay">
             <option>ยังไม่ชำระ</option>
             <option>ชำระแล้ว</option>
-            <option>โอนบางส่วน</option>
+            <option>ชำระบางส่วน</option>
           </select>
         </div>
       </div>
     </div>
-
     <div class="card">
       <div class="section-label">📂 เอกสาร</div>
       <div class="field">
@@ -161,7 +133,7 @@ body{font-family:-apple-system,BlinkMacSystemFont,'Segoe UI',Sarabun,sans-serif;
   </div>
 </div>
 
-<!-- ── COMPANY ────────────────────────────────────── -->
+<!-- COMPANY -->
 <div id="form-company" class="hidden">
   <div class="section">
     <div style="margin-top:8px"></div>
@@ -192,7 +164,6 @@ body{font-family:-apple-system,BlinkMacSystemFont,'Segoe UI',Sarabun,sans-serif;
       </div>
       <div class="field"><label>อำนาจกรรมการ</label><input type="text" id="c-authority" placeholder="ลงนามคนเดียว / สองคนร่วมกัน..."/></div>
     </div>
-
     <div class="card">
       <div class="section-label">👥 กรรมการ</div>
       <div id="c-directors-wrap">
@@ -207,7 +178,6 @@ body{font-family:-apple-system,BlinkMacSystemFont,'Segoe UI',Sarabun,sans-serif;
       </div>
       <button onclick="addDirector()" style="width:100%;background:#EEEBff;color:#534AB7;border:1.5px dashed #534AB7;border-radius:10px;padding:10px;font-family:inherit;font-size:13px;font-weight:600;cursor:pointer;margin-bottom:4px">+ เพิ่มกรรมการ</button>
     </div>
-
     <div class="card">
       <div class="section-label">👤 ผู้ถือหุ้น</div>
       <div id="c-shareholders-wrap">
@@ -222,7 +192,6 @@ body{font-family:-apple-system,BlinkMacSystemFont,'Segoe UI',Sarabun,sans-serif;
       </div>
       <button onclick="addShareholder()" style="width:100%;background:#EEEBff;color:#534AB7;border:1.5px dashed #534AB7;border-radius:10px;padding:10px;font-family:inherit;font-size:13px;font-weight:600;cursor:pointer;margin-bottom:4px">+ เพิ่มผู้ถือหุ้น</button>
     </div>
-
     <div class="card">
       <div class="section-label">📋 วัตถุประสงค์</div>
       <div class="field"><label>วัตถุประสงค์ที่ 1</label><input type="text" id="c-obj1" placeholder="ประกอบธุรกิจ..."/></div>
@@ -233,7 +202,7 @@ body{font-family:-apple-system,BlinkMacSystemFont,'Segoe UI',Sarabun,sans-serif;
   </div>
 </div>
 
-<!-- ── ANNUAL ────────────────────────────────────── -->
+<!-- ANNUAL -->
 <div id="form-annual" class="hidden">
   <div class="section">
     <div style="margin-top:8px"></div>
@@ -257,12 +226,11 @@ body{font-family:-apple-system,BlinkMacSystemFont,'Segoe UI',Sarabun,sans-serif;
           </div>
         </div>
       </div>
-      <div class="field" id="a-prev-user-field">
+      <div class="field">
         <label>Username ภาษีเดิม</label>
         <input type="text" id="a-prev-user" placeholder="เลขบัตรประชาชน หรือ Username"/>
       </div>
     </div>
-
     <div class="card">
       <div class="section-label">💰 รายได้และลดหย่อน</div>
       <div class="field">
@@ -287,7 +255,6 @@ body{font-family:-apple-system,BlinkMacSystemFont,'Segoe UI',Sarabun,sans-serif;
         </div>
       </div>
     </div>
-
     <div class="card">
       <div class="section-label">📄 เอกสารและหมายเหตุ</div>
       <div class="field">
@@ -324,13 +291,11 @@ let curType = 'monthly';
 let secName = 'เลขา';
 const radios = {};
 
-const API = 'https://finovas-crm-production.up.railway.app';
-
 liff.init({ liffId: '2010493797-WgCFfbys' }).then(async () => {
   if (liff.isLoggedIn()) {
     const p = await liff.getProfile();
     secName = p.displayName;
-    ['m-receiver','c-receiver','a-receiver'].forEach(id => {
+    ['m-receiver','c-receiver','a-receiver'].forEach(function(id) {
       const el = document.getElementById(id);
       if (el) el.value = secName;
     });
@@ -344,71 +309,81 @@ liff.init({ liffId: '2010493797-WgCFfbys' }).then(async () => {
   const custId = params.get('cust_id');
   if (custId) {
     try {
-      const res = await fetch(`${API}/api/customers/${custId}`);
+      const res = await fetch(API + '/api/customers/' + custId);
       const cust = await res.json();
       if (cust && cust.id) prefillForm(cust);
     } catch(e) { console.log('prefill error:', e); }
   }
-}).catch(e => console.log('LIFF error:', e));
+}).catch(function(e) { console.log('LIFF error:', e); });
 
 function prefillForm(c) {
-  // เลือก tab อัตโนมัติตามบริการ
+  // Auto switch tab ตามบริการ
   const svc = c.service || '';
   let tabKey = 'monthly';
-  if (svc.includes('จด') || svc.includes('Holding') || svc.includes('ปิดบริษัท')) tabKey = 'company';
+  if (svc.includes('จด') || svc.includes('Holding')) tabKey = 'company';
   else if (svc.includes('ภาษี') || svc.includes('วีซ่า')) tabKey = 'annual';
-  
-  // Switch tab directly
-  ['monthly','company','annual'].forEach(t => {
-    const form = document.getElementById('form-'+t);
-    if (form) form.style.display = t === tabKey ? 'block' : 'none';
-  });
-  document.querySelectorAll('.type-tab').forEach((btn, i) => {
+
+  // Switch tab
+  document.querySelectorAll('.type-tab').forEach(function(btn, i) {
     const keys = ['monthly','company','annual'];
     btn.classList.toggle('active', keys[i] === tabKey);
   });
+  ['monthly','company','annual'].forEach(function(t) {
+    const el = document.getElementById('form-' + t);
+    if (el) el.classList.toggle('hidden', t !== tabKey);
+  });
   curType = tabKey;
 
-  setTimeout(() => {
+  // ใส่ข้อมูลในฟอร์ม
+  setTimeout(function() {
+    function setVal(id, val) {
+      const el = document.getElementById(id);
+      if (el && val) el.value = val;
+    }
     // Tab รายเดือน
-    const set = (id, val) => { const el = document.getElementById(id); if (el && val) el.value = val; };
-    set('m-name', c.name); set('m-biz', c.biz); set('m-tel', c.phone);
-    set('m-sender', c.sales_by); set('m-price', c.price);
-    set('m-account', c.id);
-    set('m-date', new Date().toISOString().split('T')[0]);
+    setVal('m-name', c.name);
+    setVal('m-biz', c.biz);
+    setVal('m-tel', c.phone);
+    setVal('m-sender', c.sales_by);
+    setVal('m-price', c.price);
+    setVal('m-date', new Date().toISOString().split('T')[0]);
     if (c.service) {
       const mSvc = document.getElementById('m-service');
-      if (mSvc) [...mSvc.options].forEach(o => { if (o.text === c.service) o.selected = true; });
+      if (mSvc) {
+        for (let i = 0; i < mSvc.options.length; i++) {
+          if (mSvc.options[i].text === c.service) { mSvc.selectedIndex = i; break; }
+        }
+      }
     }
-
     // Tab จดบริษัท
-    set('c-contact', c.name); set('c-sender', c.sales_by);
-
+    setVal('c-contact', c.name);
+    setVal('c-sender', c.sales_by);
     // Tab ยื่นภาษี
-    set('a-name', c.name); set('a-sender', c.sales_by);
-    set('a-line', c.social_id);
+    setVal('a-name', c.name);
+    setVal('a-sender', c.sales_by);
+    setVal('a-line', c.social_id);
 
-    // Banner แจ้ง
+    // Banner
     const banner = document.createElement('div');
-    banner.style.cssText = 'background:#E1F5EE;border:1.5px solid #5DCAA5;border-radius:10px;padding:10px 14px;margin:12px 16px 0;font-size:13px;color:#0F6E56;font-weight:600;';
+    banner.className = 'prefill-banner';
     banner.textContent = '✅ ดึงข้อมูลลูกค้าอัตโนมัติแล้วค่ะ กรุณาตรวจสอบและกรอกเพิ่มเติม';
-    const tabs = document.querySelector('.type-tabs');
+    const tabs = document.getElementById('typeTabs');
     if (tabs) tabs.insertAdjacentElement('afterend', banner);
-    setTimeout(() => banner.remove(), 6000);
+    setTimeout(function() { banner.remove(); }, 6000);
   }, 300);
 }
 
 function setType(t, el) {
   curType = t;
-  document.querySelectorAll('.type-tab').forEach(b => b.classList.remove('active'));
+  document.querySelectorAll('.type-tab').forEach(function(b) { b.classList.remove('active'); });
   el.classList.add('active');
-  ['monthly','company','annual'].forEach(x => {
+  ['monthly','company','annual'].forEach(function(x) {
     document.getElementById('form-'+x).classList.toggle('hidden', x !== t);
   });
 }
 
 function pickR(el, group, val) {
-  el.closest('.radio-group').querySelectorAll('.radio-btn').forEach(b => b.classList.remove('selected'));
+  el.closest('.radio-group').querySelectorAll('.radio-btn').forEach(function(b) { b.classList.remove('selected'); });
   el.classList.add('selected');
   radios[group] = val;
 }
@@ -419,12 +394,10 @@ function addDirector() {
   const wrap = document.getElementById('c-directors-wrap');
   const box = document.createElement('div');
   box.className = 'person-box';
-  box.innerHTML = `<div class="person-title">กรรมการที่ ${dirCount}</div>
-    <div class="field"><label>ชื่อ-นามสกุล</label><input type="text" class="c-dir-name" placeholder="ชื่อ นามสกุล"/></div>
-    <div class="grid2">
-      <div class="field"><label>เบอร์โทร</label><input type="text" class="c-dir-tel" placeholder="08X-XXX-XXXX"/></div>
-      <div class="field"><label>อีเมล</label><input type="text" class="c-dir-email" placeholder="email@..."/></div>
-    </div>`;
+  box.innerHTML = '<div class="person-title">กรรมการที่ ' + dirCount + '</div>' +
+    '<div class="field"><label>ชื่อ-นามสกุล</label><input type="text" class="c-dir-name" placeholder="ชื่อ นามสกุล"/></div>' +
+    '<div class="grid2"><div class="field"><label>เบอร์โทร</label><input type="text" class="c-dir-tel" placeholder="08X-XXX-XXXX"/></div>' +
+    '<div class="field"><label>อีเมล</label><input type="text" class="c-dir-email" placeholder="email@..."/></div></div>';
   wrap.appendChild(box);
 }
 
@@ -434,17 +407,15 @@ function addShareholder() {
   const wrap = document.getElementById('c-shareholders-wrap');
   const box = document.createElement('div');
   box.className = 'person-box';
-  box.innerHTML = `<div class="person-title">ผู้ถือหุ้นที่ ${shCount}</div>
-    <div class="field"><label>ชื่อ-นามสกุล</label><input type="text" class="c-sh-name" placeholder="ชื่อ นามสกุล"/></div>
-    <div class="grid2">
-      <div class="field"><label>สัดส่วน (%)</label><input type="number" class="c-sh-shares" placeholder="50"/></div>
-      <div class="field"><label>เบอร์โทร</label><input type="text" class="c-sh-tel" placeholder="08X-XXX-XXXX"/></div>
-    </div>`;
+  box.innerHTML = '<div class="person-title">ผู้ถือหุ้นที่ ' + shCount + '</div>' +
+    '<div class="field"><label>ชื่อ-นามสกุล</label><input type="text" class="c-sh-name" placeholder="ชื่อ นามสกุล"/></div>' +
+    '<div class="grid2"><div class="field"><label>สัดส่วน (%)</label><input type="number" class="c-sh-shares" placeholder="50"/></div>' +
+    '<div class="field"><label>เบอร์โทร</label><input type="text" class="c-sh-tel" placeholder="08X-XXX-XXXX"/></div></div>';
   wrap.appendChild(box);
 }
 
 function getChecked(containerId) {
-  return [...document.querySelectorAll('#'+containerId+' input[type=checkbox]:checked')].map(c => c.value);
+  return Array.from(document.querySelectorAll('#'+containerId+' input[type=checkbox]:checked')).map(function(c) { return c.value; });
 }
 
 async function submitSec() {
@@ -459,60 +430,86 @@ async function submitSec() {
     if (!name) { alert('กรุณากรอกชื่อลูกค้าค่ะ'); btn.textContent='📤 ส่งต่อทีมบัญชี'; btn.disabled=false; return; }
     const service = document.getElementById('m-service').value;
     if (!service) { alert('กรุณาเลือกประเภทบริการค่ะ'); btn.textContent='📤 ส่งต่อทีมบัญชี'; btn.disabled=false; return; }
-    data = { ...data, name, biz: document.getElementById('m-biz').value, date: document.getElementById('m-date').value,
-      account_id: document.getElementById('m-account').value, tel: document.getElementById('m-tel').value,
-      service, detail: document.getElementById('m-detail').value,
-      price: document.getElementById('m-price').value, pay_status: document.getElementById('m-pay').value,
-      doc_type: radios['m-doctype']||'', note: document.getElementById('m-note').value,
-      sender: document.getElementById('m-sender').value, receiver: document.getElementById('m-receiver').value };
+    data = Object.assign({}, data, {
+      name: name,
+      biz: document.getElementById('m-biz').value,
+      date: document.getElementById('m-date').value,
+      account_id: document.getElementById('m-account').value,
+      tel: document.getElementById('m-tel').value,
+      service: service,
+      detail: document.getElementById('m-detail').value,
+      price: document.getElementById('m-price').value,
+      pay_status: document.getElementById('m-pay').value,
+      doc_type: radios['m-doctype'] || '',
+      note: document.getElementById('m-note').value,
+      sender: document.getElementById('m-sender').value,
+      receiver: document.getElementById('m-receiver').value
+    });
 
   } else if (curType === 'company') {
     const contact = document.getElementById('c-contact').value.trim();
     if (!contact) { alert('กรุณากรอกชื่อผู้ติดต่อค่ะ'); btn.textContent='📤 ส่งต่อทีมบัญชี'; btn.disabled=false; return; }
-    const directors = [...document.querySelectorAll('.c-dir-name')].map((el,i) => ({
-      name: el.value, tel: document.querySelectorAll('.c-dir-tel')[i]?.value||'', email: document.querySelectorAll('.c-dir-email')[i]?.value||''
-    })).filter(d => d.name);
-    const shareholders = [...document.querySelectorAll('.c-sh-name')].map((el,i) => ({
-      name: el.value, shares: document.querySelectorAll('.c-sh-shares')[i]?.value||'', tel: document.querySelectorAll('.c-sh-tel')[i]?.value||''
-    })).filter(s => s.name);
-    data = { ...data, contact, company_name: document.getElementById('c-company').value,
-      address: document.getElementById('c-address').value, vat: radios['c-vat']||'',
-      social: radios['c-social']||'', capital: document.getElementById('c-capital').value,
+    const directors = Array.from(document.querySelectorAll('.c-dir-name')).map(function(el, i) {
+      return { name: el.value, tel: document.querySelectorAll('.c-dir-tel')[i]?.value||'', email: document.querySelectorAll('.c-dir-email')[i]?.value||'' };
+    }).filter(function(d) { return d.name; });
+    const shareholders = Array.from(document.querySelectorAll('.c-sh-name')).map(function(el, i) {
+      return { name: el.value, shares: document.querySelectorAll('.c-sh-shares')[i]?.value||'', tel: document.querySelectorAll('.c-sh-tel')[i]?.value||'' };
+    }).filter(function(s) { return s.name; });
+    data = Object.assign({}, data, {
+      contact: contact,
+      company_name: document.getElementById('c-company').value,
+      address: document.getElementById('c-address').value,
+      vat: radios['c-vat'] || '',
+      social: radios['c-social'] || '',
+      capital: document.getElementById('c-capital').value,
       capital_pct: document.getElementById('c-capital-pct').value,
       authority: document.getElementById('c-authority').value,
-      obj1: document.getElementById('c-obj1').value, obj2: document.getElementById('c-obj2').value,
-      directors, shareholders,
-      sender: document.getElementById('c-sender').value, receiver: document.getElementById('c-receiver').value };
+      obj1: document.getElementById('c-obj1').value,
+      obj2: document.getElementById('c-obj2').value,
+      directors: directors,
+      shareholders: shareholders,
+      sender: document.getElementById('c-sender').value,
+      receiver: document.getElementById('c-receiver').value
+    });
 
   } else {
     const taxName = document.getElementById('a-name').value.trim();
     if (!taxName) { alert('กรุณากรอกชื่อผู้เสียภาษีค่ะ'); btn.textContent='📤 ส่งต่อทีมบัญชี'; btn.disabled=false; return; }
-    data = { ...data, tax_name: taxName, marital: document.getElementById('a-marital').value,
-      filed_before: radios['a-filed']||'', prev_user: document.getElementById('a-prev-user').value,
-      incomes: getChecked('a-income-checks'), deductions: getChecked('a-deduction-checks'),
-      has_statement: radios['a-statement']||'', income_note: document.getElementById('a-income-note').value,
+    data = Object.assign({}, data, {
+      tax_name: taxName,
+      marital: document.getElementById('a-marital').value,
+      filed_before: radios['a-filed'] || '',
+      prev_user: document.getElementById('a-prev-user').value,
+      incomes: getChecked('a-income-checks'),
+      deductions: getChecked('a-deduction-checks'),
+      has_statement: radios['a-statement'] || '',
+      income_note: document.getElementById('a-income-note').value,
       line_acc: document.getElementById('a-line').value,
-      sender: document.getElementById('a-sender').value, receiver: document.getElementById('a-receiver').value };
+      sender: document.getElementById('a-sender').value,
+      receiver: document.getElementById('a-receiver').value
+    });
   }
 
   try {
-    const res = await fetch(`${API}/api/sec-forms`, {
-      method: 'POST', headers: { 'Content-Type': 'application/json' },
+    const res = await fetch(API + '/api/sec-forms', {
+      method: 'POST',
+      headers: { 'Content-Type': 'application/json' },
       body: JSON.stringify(data)
     });
     const result = await res.json();
     console.log('sec form saved:', result);
 
-    // แจ้งเลขาว่าส่งใบรับงานสำเร็จ
-    const custNameSec = data.name || data.contact || data.tax_name || 'ลูกค้าใหม่';
-    await fetch(`${API}/api/sec-notify`, {
-      method: 'POST', headers: { 'Content-Type': 'application/json' },
-      body: JSON.stringify({ sec_name: secName, cust_name: custNameSec, form_type: curType })
-    }).catch(()=>{});
+    // แจ้งเลขาว่าส่งสำเร็จ
+    const custName = data.name || data.contact || data.tax_name || 'ลูกค้า';
+    fetch(API + '/api/sec-notify', {
+      method: 'POST',
+      headers: { 'Content-Type': 'application/json' },
+      body: JSON.stringify({ sec_name: secName, cust_name: custName, form_type: curType, sales_by: data.sender || '' })
+    }).catch(function() {});
 
     document.getElementById('stepSuccess').classList.remove('hidden');
     document.getElementById('footer').classList.add('hidden');
-    document.querySelectorAll('#form-monthly,#form-company,#form-annual').forEach(f => f.classList.add('hidden'));
+    document.querySelectorAll('#form-monthly,#form-company,#form-annual').forEach(function(f) { f.classList.add('hidden'); });
     document.getElementById('typeTabs').classList.add('hidden');
   } catch(err) {
     btn.textContent = '📤 ส่งต่อทีมบัญชี';
