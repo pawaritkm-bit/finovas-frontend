@@ -69,6 +69,26 @@ body{font-family:-apple-system,BlinkMacSystemFont,'Segoe UI',Sarabun,sans-serif;
 .retro-summary{background:#FFEAEA;border-radius:8px;padding:8px 10px;margin-top:8px;font-size:11px;color:#791F1F;}
 
 .add-btn{width:100%;background:#E8F4FD;color:#0984E3;border:1.5px dashed #85B7EB;border-radius:12px;padding:13px;font-family:inherit;font-size:13px;font-weight:600;cursor:pointer;margin-bottom:12px;}
+.plat-section{background:linear-gradient(135deg,#E0F7EF,#E8F4FD);border:1.5px solid #5DCAA5;border-radius:16px;padding:14px;margin-top:14px;}
+.plat-title{font-size:14px;color:#085041;font-weight:700;margin-bottom:12px;}
+.plat-row{display:flex;gap:6px;flex-wrap:wrap;margin-bottom:14px;}
+.pb-fb{border:1.5px solid #90B8F8;border-radius:20px;padding:8px 14px;font-size:13px;background:linear-gradient(135deg,#E8F0FE,#D2E3FC);color:#1a56d6;font-weight:600;cursor:pointer;font-family:inherit;}
+.pb-fb.sel{background:linear-gradient(135deg,#1877F2,#0984E3);border-color:transparent;color:#fff;box-shadow:0 2px 8px rgba(24,119,242,.35);}
+.pb-tt{border:1.5px solid #ccc;border-radius:20px;padding:8px 14px;font-size:13px;background:linear-gradient(135deg,#2D2D2D,#111);color:#fff;font-weight:600;cursor:pointer;font-family:inherit;}
+.pb-tt.sel{background:linear-gradient(135deg,#111,#333);border-color:#555;color:#fff;box-shadow:0 2px 8px rgba(0,0,0,.35);}
+.pb-ig{border:1.5px solid #ED93B1;border-radius:20px;padding:8px 14px;font-size:13px;background:linear-gradient(135deg,#FCE4EC,#F8BBD9);color:#880E4F;font-weight:600;cursor:pointer;font-family:inherit;}
+.pb-ig.sel{background:linear-gradient(135deg,#C13584,#E1306C);border-color:transparent;color:#fff;box-shadow:0 2px 8px rgba(193,53,132,.35);}
+.pb-gg{border:1.5px solid #F9AB85;border-radius:20px;padding:8px 14px;font-size:13px;background:linear-gradient(135deg,#FEF3EE,#FDE8DC);color:#BF360C;font-weight:600;cursor:pointer;font-family:inherit;}
+.pb-gg.sel{background:linear-gradient(135deg,#EA4335,#FBBC05);border-color:transparent;color:#fff;box-shadow:0 2px 8px rgba(234,67,53,.35);}
+.pb-ref{border:1.5px solid #5DCAA5;border-radius:20px;padding:8px 14px;font-size:13px;background:linear-gradient(135deg,#E0FAF4,#C8F5E8);color:#085041;font-weight:600;cursor:pointer;font-family:inherit;}
+.pb-ref.sel{background:linear-gradient(135deg,#00B894,#55EFC4);border-color:transparent;color:#04342C;box-shadow:0 2px 8px rgba(0,184,148,.35);}
+.pb-wi{border:1.5px solid #AFA9EC;border-radius:20px;padding:8px 14px;font-size:13px;background:linear-gradient(135deg,#EEEBff,#E4E0FF);color:#3C3489;font-weight:600;cursor:pointer;font-family:inherit;}
+.pb-wi.sel{background:linear-gradient(135deg,#534AB7,#A29BFE);border-color:transparent;color:#fff;box-shadow:0 2px 8px rgba(83,74,183,.35);}
+.pb-ot{border:1.5px solid #EF9F27;border-radius:20px;padding:8px 14px;font-size:13px;background:linear-gradient(135deg,#FFF8E1,#FFF0C0);color:#633806;font-weight:600;cursor:pointer;font-family:inherit;}
+.pb-ot.sel{background:linear-gradient(135deg,#EF9F27,#FDCB6E);border-color:transparent;color:#412402;box-shadow:0 2px 8px rgba(239,159,39,.35);}
+.social-box{background:linear-gradient(135deg,#E8F4FD,#E0F7EF);border:1.5px solid #5DCAA5;border-radius:12px;padding:12px 14px;}
+.social-lbl{font-size:13px;color:#085041;font-weight:700;margin-bottom:6px;}
+.social-input{width:100%;border:1.5px solid #5DCAA5;border-radius:10px;padding:11px 13px;font-size:15px;font-family:inherit;outline:none;background:#fff;color:#042C53;}
 
 .total-box{background:linear-gradient(135deg,#042C53,#0984E3);border-radius:14px;padding:14px 16px;}
 
@@ -117,6 +137,21 @@ body{font-family:-apple-system,BlinkMacSystemFont,'Segoe UI',Sarabun,sans-serif;
       <div class="field"><label>ชื่อกิจการ</label><input type="text" id="biz" placeholder="บริษัท / ร้านค้า..."/></div>
       <div class="field"><label style="font-size:15px;">เบอร์ติดต่อ <span class="req">*</span></label><input type="tel" id="phone" placeholder="08X-XXX-XXXX" style="font-size:16px;padding:13px 14px;"/></div>
       <div class="field"><label style="font-size:15px;">เบอร์ฉุกเฉิน</label><input type="tel" id="phone_emergency" placeholder="08X-XXX-XXXX (ถ้ามี)" style="font-size:16px;padding:13px 14px;"/></div>
+      <!-- Platform section -->
+      <div class="plat-section">
+        <div class="plat-title">📣 ช่องทางที่มา (กดเลือก)</div>
+        <div class="plat-row" id="platRow">
+          <button class="pb-fb" onclick="pickPlat('Facebook','ชื่อ Facebook',this)">Facebook</button>
+          <button class="pb-tt" onclick="pickPlat('TikTok','ชื่อ TikTok',this)">TikTok</button>
+          <button class="pb-ig" onclick="pickPlat('Instagram','ชื่อ Instagram',this)">Instagram</button>
+          <button class="pb-gg" onclick="pickPlat('Google','',this)">Google</button>
+          <button class="pb-ref" onclick="pickPlat('Referral','ชื่อคนที่แนะนำ',this)">Referral</button>
+          <button class="pb-wi" onclick="pickPlat('Walk-in','',this)">Walk-in</button>
+          <button class="pb-ot" onclick="pickPlat('อื่นๆ','อื่นๆ',this)">อื่นๆ</button>
+        </div>
+        <div id="socialField" class="hidden"></div>
+      </div>
+
       <div class="field">
         <label>ประเภทธุรกิจ</label>
         <select id="bizTypeSelect" onchange="onBizTypeChange(this.value)">
@@ -246,6 +281,47 @@ function togDoc(d,c){if(c)selDocs.push(d);else selDocs=selDocs.filter(x=>x!==d);
 function pickRadio(el,g,v){el.closest('.radio-group').querySelectorAll('.radio-btn').forEach(b=>b.classList.remove('selected'));el.classList.add('selected');radios[g]=v;}
 function onBizTypeChange(v){document.getElementById('bizTypeOtherField').classList.toggle('hidden',v!=='อื่นๆ (ระบุ)');}
 function getBizType(){const s=document.getElementById('bizTypeSelect').value;return s==='อื่นๆ (ระบุ)'?document.getElementById('bizTypeOther').value.trim()||'อื่นๆ':s;}
+
+let selPlatform='';
+let selSocialId='';
+
+function pickPlat(plat, socialLabel, el) {
+  // Remove sel from all buttons
+  document.querySelectorAll('#platRow button').forEach(b => {
+    b.className = b.className.replace(' sel','');
+  });
+  // Add sel to clicked
+  el.className = el.className + ' sel';
+  selPlatform = plat;
+
+  const field = document.getElementById('socialField');
+  if (!socialLabel || socialLabel === '') {
+    // Google / Walk-in — no field
+    field.classList.add('hidden');
+    field.innerHTML = '';
+    selSocialId = '';
+  } else if (plat === 'อื่นๆ') {
+    field.classList.remove('hidden');
+    field.innerHTML = `
+      <div style="margin-bottom:10px;">
+        <div class="social-lbl">ระบุแพลตฟอร์ม</div>
+        <input class="social-input" id="otherPlat" placeholder="เช่น Twitter, YouTube..." oninput="selSocialId=document.getElementById('otherSocial').value+' ('+this.value+')'"/>
+      </div>
+      <div class="social-box" style="margin-top:0;">
+        <div class="social-lbl">ชื่อ / โปรไฟล์</div>
+        <input class="social-input" id="otherSocial" placeholder="ชื่อหรือลิงก์โปรไฟล์..." oninput="selSocialId=this.value+' ('+document.getElementById('otherPlat').value+')'"/>
+      </div>`;
+    selSocialId = '';
+  } else {
+    field.classList.remove('hidden');
+    field.innerHTML = `
+      <div class="social-box">
+        <div class="social-lbl">${socialLabel}</div>
+        <input class="social-input" id="socialInput" placeholder="${socialLabel}..." oninput="selSocialId=this.value"/>
+      </div>`;
+    selSocialId = '';
+  }
+}
 
 function addService(){
   svcCounter++;
@@ -482,6 +558,7 @@ async function submitForm(){
         promise:document.getElementById('promise').value,
         note:document.getElementById('note').value,
         phone,phone_emergency,
+        platform:selPlatform,social_id:selSocialId,
         sales_by:salesBy,status:'B',source:'LIFF เซลล์',
         cust_type:custType,pipeline_status:'ลูกค้าปัจจุบัน',
         services:JSON.stringify(svcData),
