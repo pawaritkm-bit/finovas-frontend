@@ -87,7 +87,7 @@ body{font-family:-apple-system,BlinkMacSystemFont,'Segoe UI',Sarabun,sans-serif;
         <div class="field"><label>วันที่รับงาน</label><input type="date" id="m-date"/></div>
         <div class="field"><label>Account ID</label><input type="text" id="m-account" placeholder="รหัสลูกค้า"/></div>
       </div>
-      <div class="field"><label>เบอร์ติดต่อ</label><input type="tel" id="m-tel" placeholder="08X-XXX-XXXX" inputmode="numeric"/></div>
+      <div class="field"><label>เบอร์ติดต่อ</label><input type="tel" id="m-tel" placeholder="08X-XXX-XXXX" inputmode="numeric" style="width:100%;font-size:14px;padding:12px 14px;"/></div>
     </div>
     <div class="card">
       <div class="section-label">💼 รายละเอียดงาน</div>
@@ -104,7 +104,7 @@ body{font-family:-apple-system,BlinkMacSystemFont,'Segoe UI',Sarabun,sans-serif;
       </div>
       <div class="field"><label>รายละเอียดธุรกิจ</label><textarea id="m-detail" placeholder="อธิบายธุรกิจของลูกค้า..."></textarea></div>
       <div class="grid2">
-        <div class="field"><label>ค่าบริการ (บาท/เดือน)</label><input type="number" id="m-price" placeholder="4000"/></div>
+        <div class="field"><label>ค่าบริการ (บาท/เดือน)</label><input type="text" id="m-price" placeholder="4000" inputmode="numeric"/></div>
         <div class="field">
           <label>สถานะชำระ</label>
           <select id="m-pay">
@@ -343,9 +343,9 @@ function prefillForm(c) {
     // Tab รายเดือน
     setVal('m-name', c.name);
     setVal('m-biz', c.biz);
-    setVal('m-tel', c.phone || '');
+    setVal('m-tel', c.phone ? String(c.phone) : '');
     setVal('m-sender', c.sales_by);
-    setVal('m-price', c.price);
+    setVal('m-price', c.price ? String(c.price) : '');
     setVal('m-date', new Date().toISOString().split('T')[0]);
     if (c.service) {
       const mSvc = document.getElementById('m-service');
