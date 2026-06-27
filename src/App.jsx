@@ -1563,6 +1563,77 @@ const API_URL = 'https://finovas-crm-production.up.railway.app';
 
 
 
+
+// ── ประเมินทีมบัญชี View ────────────────────────────────────────────────────
+function AccountantPerfView(){
+  const API='https://finovas-crm-production.up.railway.app';
+  const [data,setData]=React.useState([]);
+  const [loading,setLoading]=React.useState(true);
+
+  React.useEffect(()=>{
+    fetch(API+'/api/accountant-performance')
+      .then(r=>r.json()).then(d=>{ if(d.data) setData(d.data); setLoading(false); })
+      .catch(()=>setLoading(false));
+  },[]);
+
+  const getScoreColor=(label)=>{
+    if(!label||label==='-') return {bg:'#F4F3FF',c:'#8B8BAD'};
+    if(label.includes('ดีมาก')||label.includes('เร็วมาก')) return {bg:'#E1F5EE',c:'#085041'};
+    if(label.includes('พอใช้')||label.includes('ปกติ')) return {bg:'#E6F1FB',c:'#0C447C'};
+    return {bg:'#FCEBEB',c:'#791F1F'};
+  };
+
+  if(loading) return <div style={{padding:24,textAlign:'center',color:'#8B8BAD'}}>กำลังโหลดข้อมูล...</div>;
+
+  return(
+    <div style={{flex:1,overflow:'auto',background:'#F4F3FF',padding:'16px 20px'}}>
+      <div style={{fontSize:14,fontWeight:700,color:'#534AB7',marginBottom:4}}>📊 ประเมินทีมบัญชี</div>
+      <div style={{fontSize:12,color:'#8B8BAD',marginBottom:16}}>วิเคราะห์จากแชทในกลุ่ม LINE + LINE OA บัญชี (7 วันย้อนหลัง)</div>
+
+      {data.length===0&&<div style={{textAlign:'center',color:'#8B8BAD',padding:32}}>ยังไม่มีข้อมูลค่ะ</div>}
+
+      {data.map((d,i)=>{
+        const respCol=getScoreColor(d.response_label);
+        const sentCol=getScoreColor(d.sentiment_label);
+        return(
+          <div key={i} style={{background:'#fff',borderRadius:16,padding:16,marginBottom:12,border:'1px solid #E8E6FF',boxShadow:'0 1px 4px rgba(83,74,183,.06)'}}>
+            <div style={{display:'flex',alignItems:'center',gap:10,marginBottom:12}}>
+              <div style={{width:40,height:40,borderRadius:50,background:'#EEEBff',display:'flex',alignItems:'center',justifyContent:'center',fontWeight:700,fontSize:16,color:'#534AB7',flexShrink:0}}>
+                {(d.accountant.name||'?').slice(2,4)||(d.accountant.name||'?').slice(0,2)}
+              </div>
+              <div style={{flex:1}}>
+                <div style={{fontSize:15,fontWeight:700,color:'#1E1B4B'}}>{d.accountant.name}</div>
+                <div style={{fontSize:12,color:'#8B8BAD'}}>💬 ข้อความทั้งหมด: {d.total_messages} ครั้ง</div>
+              </div>
+            </div>
+
+            <div style={{display:'grid',gridTemplateColumns:'1fr 1fr',gap:8}}>
+              <div style={{background:respCol.bg,borderRadius:12,padding:'10px 12px'}}>
+                <div style={{fontSize:10,color:'#8B8BAD',marginBottom:4}}>⏱ ความเร็วตอบ</div>
+                <div style={{fontSize:13,fontWeight:700,color:respCol.c}}>{d.response_label||'-'}</div>
+                {d.avg_response_sec&&<div style={{fontSize:11,color:'#8B8BAD',marginTop:2}}>{Math.round(d.avg_response_sec/60)} นาที/ครั้ง</div>}
+              </div>
+              <div style={{background:sentCol.bg,borderRadius:12,padding:'10px 12px'}}>
+                <div style={{fontSize:10,color:'#8B8BAD',marginBottom:4}}>💬 โทนการตอบ</div>
+                <div style={{fontSize:13,fontWeight:700,color:sentCol.c}}>{d.sentiment_label||'-'}</div>
+              </div>
+            </div>
+          </div>
+        );
+      })}
+
+      <div style={{background:'#EEEBff',borderRadius:12,padding:'12px 14px',marginTop:8,fontSize:12,color:'#534AB7',lineHeight:1.7}}>
+        <div style={{fontWeight:700,marginBottom:4}}>📌 เกณฑ์การประเมิน</div>
+        ⚡ เร็วมาก: ตอบภายใน 5 นาที<br/>
+        ✅ ปกติ: ตอบภายใน 15 นาที<br/>
+        ⏳ ช้า: ตอบภายใน 1 ชั่วโมง<br/>
+        🔴 ช้ามาก: เกิน 1 ชั่วโมง<br/>
+        😊 โทนดี: ประเมินจาก AI วิเคราะห์ข้อความ
+      </div>
+    </div>
+  );
+}
+
 // ── จัดการนักบัญชี View ────────────────────────────────────────────────────────
 function AccountantView({custs}){
   const COLORS_A=[
@@ -1935,7 +2006,8 @@ export default function App(){
     {id:"tgt",   label:"เป้าเซลล์",   icon:"📈"},
     {id:"churn", label:"Churn",       icon:"❌"},
     {id:"forms", label:"ใบรับงาน",    icon:"📄"},
-    {id:"acct",  label:"นักบัญชี",    icon:"🧑‍💼"},
+    {id:"acct",  label:"นักบัญชี",    icon:"🧑\u200d💼"},
+    {id:"perf",  label:"ประเมินทีม",   icon:"📊"},
   ];
 
   const tabLabel=MAIN_NAV.find(n=>n.id===tab)?.label||"";
@@ -2028,6 +2100,7 @@ export default function App(){
           {tab==="churn" && <ChurnView/>}
           {tab==="forms" && <SecFormsView/>}
           {tab==="acct"  && <AccountantView custs={custs}/>}
+          {tab==="perf"  && <AccountantPerfView/>}
         </div>
 
         {/* Bottom nav — mobile */}
