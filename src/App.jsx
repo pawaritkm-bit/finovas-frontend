@@ -1231,10 +1231,21 @@ function PipelineView({custs}){
               {items.length===0 && <div style={{padding:10,fontSize:11,color:"var(--color-text-tertiary)",textAlign:"center"}}>ว่าง</div>}
               {items.map(c=>(
                 <div key={c.id} style={{padding:"8px 10px",borderBottom:`0.5px solid ${C.bdr}`,fontSize:11}}>
-                  <div style={{fontWeight:700,fontSize:13,color:"var(--color-text-primary)"}}>{c.name}</div>
-                  <div style={{color:C.muted,fontSize:12,marginTop:2}}>{c.svc}</div>
-                  {c.price>0 && <div style={{color:C.green,fontSize:10,fontWeight:500}}>฿{c.price.toLocaleString()}</div>}
-                  <div style={{color:"var(--color-text-tertiary)",fontSize:9}}>{c.by}</div>
+                  <div style={{display:'flex',justifyContent:'space-between',alignItems:'flex-start'}}>
+                    <div>
+                      <div style={{fontWeight:700,fontSize:13,color:"var(--color-text-primary)"}}>{c.name}</div>
+                      <div style={{color:C.muted,fontSize:12,marginTop:2}}>{c.svc||c.biz||'-'}</div>
+                      {c.price>0 && <div style={{color:C.green,fontSize:10,fontWeight:500}}>฿{c.price.toLocaleString()}</div>}
+                      <div style={{color:"var(--color-text-tertiary)",fontSize:9}}>{c.by}</div>
+                    </div>
+                    {col.key==='รอโทร' && (
+                      <button onClick={async()=>{
+                        if(!window.confirm('ลบ '+c.name+' ออกจากรายชื่อรอโทร?')) return;
+                        await fetch('https://finovas-crm-production.up.railway.app/api/customers/'+c.id,{method:'DELETE'});
+                        window.location.reload();
+                      }} style={{background:'#FCEBEB',border:'none',borderRadius:6,padding:'3px 8px',fontSize:10,color:'#A32D2D',fontWeight:700,cursor:'pointer',flexShrink:0,marginLeft:6}}>ลบ</button>
+                    )}
+                  </div>
                 </div>
               ))}
             </div>
@@ -1563,6 +1574,157 @@ const API_URL = 'https://finovas-crm-production.up.railway.app';
 
 
 
+
+
+// ── เป้าหมายเซลล์ View ─────────────────────────────────────────────────────
+function SalesTargetView(){
+  const API='https://finovas-crm-production.up.railway.app';
+  const [targets,setTargets]=React.useState([]);
+  const [loading,setLoading]=React.useState(true);
+  const [editName,setEditName]=React.useState('');
+  const [form,setForm]=React.useState({target_revenue:'',target_monthly:'',target_tax:'',target_company:''});
+  const [saving,setSaving]=React.useState(false);
+
+  const load=()=>{
+    fetch(API+'/api/sales-targets-detail').then(r=>r.json()).then(d=>{setTargets(Array.isArray(d)?d:[]);setLoading(false);}).catch(()=>setLoading(false));
+  };
+  React.useEffect(()=>{load();},[]);
+
+  const handleEdit=(t)=>{
+    setEditName(t.sales_name);
+    setForm({target_revenue:t.target_revenue||'',target_monthly:t.target_monthly||'',target_tax:t.target_tax||'',target_company:t.target_company||''});
+  };
+
+  const handleSave=async()=>{
+    if(!editName) return;
+    setSaving(true);
+    await fetch(API+'/api/sales-targets-detail',{method:'POST',headers:{'Content-Type':'application/json'},body:JSON.stringify({sales_name:editName,...form})});
+    setSaving(false); setEditName(''); load();
+  };
+
+  const pct=(a,t)=>t>0?Math.min(100,Math.round(a/t*100)):0;
+  const barColor=(p)=>p>=90?'#0F6E56':p>=60?'#534AB7':'#E17055';
+
+  if(loading) return <div style={{padding:24,textAlign:'center',color:'#8B8BAD'}}>กำลังโหลด...</div>;
+
+  const total_rev = targets.reduce((a,t)=>a+(t.actual_revenue||0),0);
+  const total_rev_target = targets.reduce((a,t)=>a+(t.target_revenue||0),0);
+  const total_monthly = targets.reduce((a,t)=>a+(t.actual_monthly||0),0);
+  const total_tax = targets.reduce((a,t)=>a+(t.actual_tax||0),0);
+  const total_company = targets.reduce((a,t)=>a+(t.actual_company||0),0);
+
+  return(
+    <div style={{flex:1,overflow:'auto',background:'#F4F3FF',padding:'16px 20px'}}>
+      <div style={{fontSize:14,fontWeight:700,color:'#534AB7',marginBottom:4}}>🎯 เป้าหมายเซลล์</div>
+      <div style={{fontSize:12,color:'#8B8BAD',marginBottom:16}}>ยอดเงิน + จำนวนหัว 3 บริการ</div>
+
+      {/* ภาพรวม */}
+      <div style={{background:'#fff',borderRadius:16,padding:14,marginBottom:12,border:'1px solid #E8E6FF'}}>
+        <div style={{fontSize:12,fontWeight:700,color:'#8B8BAD',marginBottom:10}}>📊 ภาพรวมทีม</div>
+        <div style={{display:'grid',gridTemplateColumns:'1fr 1fr',gap:8,marginBottom:8}}>
+          <div style={{background:'#F4F3FF',borderRadius:10,padding:10,textAlign:'center'}}>
+            <div style={{fontSize:18,fontWeight:800,color:'#534AB7'}}>฿{total_rev.toLocaleString()}</div>
+            <div style={{fontSize:10,color:'#8B8BAD'}}>จาก ฿{total_rev_target.toLocaleString()}</div>
+          </div>
+          <div style={{background:'#E1F5EE',borderRadius:10,padding:10,textAlign:'center'}}>
+            <div style={{fontSize:18,fontWeight:800,color:'#0F6E56'}}>{pct(total_rev,total_rev_target)}%</div>
+            <div style={{fontSize:10,color:'#8B8BAD'}}>ยอดรวมทีม</div>
+          </div>
+        </div>
+        <div style={{display:'grid',gridTemplateColumns:'1fr 1fr 1fr',gap:6}}>
+          <div style={{background:'#EEEBff',borderRadius:8,padding:8,textAlign:'center'}}>
+            <div style={{fontSize:14,fontWeight:700,color:'#534AB7'}}>{total_monthly}</div>
+            <div style={{fontSize:9,color:'#8B8BAD'}}>ทำบัญชี</div>
+          </div>
+          <div style={{background:'#E6F1FB',borderRadius:8,padding:8,textAlign:'center'}}>
+            <div style={{fontSize:14,fontWeight:700,color:'#0C447C'}}>{total_tax}</div>
+            <div style={{fontSize:9,color:'#8B8BAD'}}>ยื่นภาษี</div>
+          </div>
+          <div style={{background:'#FFF3E0',borderRadius:8,padding:8,textAlign:'center'}}>
+            <div style={{fontSize:14,fontWeight:700,color:'#633806'}}>{total_company}</div>
+            <div style={{fontSize:9,color:'#8B8BAD'}}>จดบริษัท</div>
+          </div>
+        </div>
+      </div>
+
+      {/* รายบุคคล */}
+      {targets.map((t,i)=>{
+        const p=pct(t.actual_revenue,t.target_revenue);
+        const col=barColor(p);
+        return(
+          <div key={i} style={{background:'#fff',borderRadius:16,padding:14,marginBottom:10,border:'1px solid #E8E6FF'}}>
+            <div style={{display:'flex',alignItems:'center',gap:10,marginBottom:10}}>
+              <div style={{width:38,height:38,borderRadius:'50%',background:'#EEEBff',display:'flex',alignItems:'center',justifyContent:'center',fontWeight:700,fontSize:15,color:'#534AB7',flexShrink:0}}>
+                {(t.sales_name||'?').slice(2,4)||(t.sales_name||'?').slice(0,2)}
+              </div>
+              <div style={{flex:1}}>
+                <div style={{fontSize:14,fontWeight:700,color:'#1E1B4B'}}>{t.sales_name}</div>
+                <div style={{fontSize:11,color:'#8B8BAD'}}>฿{(t.actual_revenue||0).toLocaleString()} / ฿{(t.target_revenue||0).toLocaleString()}</div>
+                <div style={{height:5,background:'#F0EFF8',borderRadius:3,marginTop:4,overflow:'hidden'}}>
+                  <div style={{height:'100%',width:p+'%',background:col,borderRadius:3,transition:'width .5s'}}/>
+                </div>
+              </div>
+              <div style={{fontSize:15,fontWeight:700,color:col}}>{p}%</div>
+            </div>
+            <div style={{display:'grid',gridTemplateColumns:'1fr 1fr 1fr',gap:6,marginBottom:8}}>
+              <div style={{background:'#EEEBff',borderRadius:8,padding:6,textAlign:'center'}}>
+                <div style={{fontSize:12,fontWeight:700,color:'#534AB7'}}>{t.actual_monthly||0}/{t.target_monthly||0}</div>
+                <div style={{fontSize:9,color:'#8B8BAD'}}>ทำบัญชี</div>
+              </div>
+              <div style={{background:'#E6F1FB',borderRadius:8,padding:6,textAlign:'center'}}>
+                <div style={{fontSize:12,fontWeight:700,color:'#0C447C'}}>{t.actual_tax||0}/{t.target_tax||0}</div>
+                <div style={{fontSize:9,color:'#8B8BAD'}}>ยื่นภาษี</div>
+              </div>
+              <div style={{background:'#FFF3E0',borderRadius:8,padding:6,textAlign:'center'}}>
+                <div style={{fontSize:12,fontWeight:700,color:'#633806'}}>{t.actual_company||0}/{t.target_company||0}</div>
+                <div style={{fontSize:9,color:'#8B8BAD'}}>จดบริษัท</div>
+              </div>
+            </div>
+            <button onClick={()=>handleEdit(t)} style={{background:'#F4F3FF',border:'1.5px solid #E8E6FF',borderRadius:8,padding:'6px 12px',fontSize:11,fontWeight:600,color:'#534AB7',cursor:'pointer',width:'100%'}}>✏️ แก้ไขเป้าหมาย</button>
+          </div>
+        );
+      })}
+
+      {/* ฟอร์มแก้ไข */}
+      {editName&&(
+        <div style={{background:'#fff',borderRadius:16,padding:14,marginBottom:12,border:'2px solid #534AB7'}}>
+          <div style={{fontSize:13,fontWeight:700,color:'#534AB7',marginBottom:12}}>✏️ แก้ไขเป้า — {editName}</div>
+          <div style={{display:'grid',gridTemplateColumns:'1fr 1fr',gap:8,marginBottom:8}}>
+            <div>
+              <div style={{fontSize:10,color:'#8B8BAD',marginBottom:3}}>ยอดเงิน (฿/เดือน)</div>
+              <input type="number" value={form.target_revenue} onChange={e=>setForm({...form,target_revenue:e.target.value})} style={{border:'1.5px solid #E8E6FF',borderRadius:8,padding:'7px 10px',fontSize:12,width:'100%',outline:'none'}} placeholder="30000"/>
+            </div>
+            <div>
+              <div style={{fontSize:10,color:'#8B8BAD',marginBottom:3}}>ทำบัญชีรายเดือน (ราย)</div>
+              <input type="number" value={form.target_monthly} onChange={e=>setForm({...form,target_monthly:e.target.value})} style={{border:'1.5px solid #E8E6FF',borderRadius:8,padding:'7px 10px',fontSize:12,width:'100%',outline:'none'}} placeholder="10"/>
+            </div>
+            <div>
+              <div style={{fontSize:10,color:'#8B8BAD',marginBottom:3}}>ยื่นภาษีบุคคล (ราย)</div>
+              <input type="number" value={form.target_tax} onChange={e=>setForm({...form,target_tax:e.target.value})} style={{border:'1.5px solid #E8E6FF',borderRadius:8,padding:'7px 10px',fontSize:12,width:'100%',outline:'none'}} placeholder="3"/>
+            </div>
+            <div>
+              <div style={{fontSize:10,color:'#8B8BAD',marginBottom:3}}>จดบริษัท/หจก. (ราย)</div>
+              <input type="number" value={form.target_company} onChange={e=>setForm({...form,target_company:e.target.value})} style={{border:'1.5px solid #E8E6FF',borderRadius:8,padding:'7px 10px',fontSize:12,width:'100%',outline:'none'}} placeholder="2"/>
+            </div>
+          </div>
+          <div style={{display:'flex',gap:8}}>
+            <button onClick={handleSave} disabled={saving} style={{flex:1,background:'linear-gradient(135deg,#534AB7,#6C5CE7)',color:'#fff',border:'none',borderRadius:10,padding:10,fontSize:13,fontWeight:700,cursor:'pointer'}}>
+              {saving?'กำลังบันทึก...':'💾 บันทึก'}
+            </button>
+            <button onClick={()=>setEditName('')} style={{background:'#F4F3FF',border:'1.5px solid #E8E6FF',borderRadius:10,padding:'10px 16px',fontSize:13,cursor:'pointer',color:'#8B8BAD'}}>ยกเลิก</button>
+          </div>
+        </div>
+      )}
+
+      {/* เพิ่มเซลล์ใหม่ */}
+      {!editName&&(
+        <button onClick={()=>{setEditName('ใหม่');setForm({target_revenue:'',target_monthly:'',target_tax:'',target_company:''});}} style={{background:'#534AB7',color:'#fff',border:'none',borderRadius:12,padding:'11px 16px',fontSize:13,fontWeight:700,cursor:'pointer',width:'100%',marginTop:4}}>
+          ➕ เพิ่มเซลล์ใหม่
+        </button>
+      )}
+    </div>
+  );
+}
 
 // ── ประเมินทีมบัญชี View ────────────────────────────────────────────────────
 function AccountantPerfView(){
@@ -2008,6 +2170,7 @@ export default function App(){
     {id:"forms", label:"ใบรับงาน",    icon:"📄"},
     {id:"acct",  label:"นักบัญชี",    icon:"🧑\u200d💼"},
     {id:"perf",  label:"ประเมินทีม",   icon:"📊"},
+    {id:"target", label:"เป้าเซลล์",    icon:"🎯"},
   ];
 
   const tabLabel=MAIN_NAV.find(n=>n.id===tab)?.label||"";
@@ -2101,6 +2264,7 @@ export default function App(){
           {tab==="forms" && <SecFormsView/>}
           {tab==="acct"  && <AccountantView custs={custs}/>}
           {tab==="perf"  && <AccountantPerfView/>}
+          {tab==="target"&& <SalesTargetView/>}
         </div>
 
         {/* Bottom nav — mobile */}
