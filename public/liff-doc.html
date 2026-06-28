@@ -1,0 +1,227 @@
+<!DOCTYPE html>
+<html lang="th">
+<head>
+<meta charset="UTF-8"/>
+<meta name="viewport" content="width=device-width, initial-scale=1.0, user-scalable=no"/>
+<title>Finovas — ตามเอกสาร</title>
+<script src="https://static.line-scdn.net/liff/edge/versions/2.22.3/sdk.js"></script>
+<style>
+*{box-sizing:border-box;margin:0;padding:0;}
+body{font-family:-apple-system,BlinkMacSystemFont,'Segoe UI',Sarabun,sans-serif;background:#F4F3FF;min-height:100vh;}
+.header{background:linear-gradient(135deg,#1E1B4B,#534AB7);padding:16px;color:#fff;}
+.header-title{font-size:16px;font-weight:700;}
+.header-sub{font-size:11px;color:rgba(255,255,255,.6);margin-top:2px;}
+.body{padding:14px;display:flex;flex-direction:column;gap:12px;}
+.card{background:#fff;border-radius:14px;padding:14px;box-shadow:0 1px 4px rgba(83,74,183,.08);}
+.card-title{font-size:13px;font-weight:700;color:#1E1B4B;margin-bottom:10px;display:flex;align-items:center;gap:6px;}
+.tag-row{display:flex;gap:6px;margin-bottom:10px;flex-wrap:wrap;}
+.tag{border-radius:20px;padding:3px 10px;font-size:10px;font-weight:700;cursor:pointer;}
+.tag-m{background:#E1F5EE;color:#085041;}
+.tag-o{background:#FFF3E0;color:#633806;}
+.chk{display:flex;align-items:center;gap:8px;padding:8px 0;border-bottom:1px solid #F4F3FF;cursor:pointer;}
+.chk:last-child{border-bottom:none;}
+.chk-box{width:20px;height:20px;border-radius:5px;border:2px solid #E8E6FF;background:#fff;flex-shrink:0;display:flex;align-items:center;justify-content:center;font-size:11px;transition:all .15s;}
+.chk-box.on{background:#534AB7;border-color:#534AB7;color:#fff;}
+.chk-label{font-size:13px;color:#1E1B4B;flex:1;}
+.chk-freq{border-radius:20px;padding:2px 7px;font-size:9px;font-weight:700;margin-left:auto;flex-shrink:0;}
+.freq-m{background:#E1F5EE;color:#085041;}
+.freq-o{background:#FFF3E0;color:#633806;}
+.freq-done{background:#F4F3FF;color:#8B8BAD;}
+.chk-label.done{color:#8B8BAD;text-decoration:line-through;}
+.ai-box{background:#EEEBff;border-radius:10px;padding:10px 12px;border-left:3px solid #534AB7;font-size:11px;color:#534AB7;}
+.ai-box-green{background:#E1F5EE;border-radius:10px;padding:10px 12px;border-left:3px solid #0F6E56;font-size:11px;color:#0F6E56;}
+.send-btn{background:linear-gradient(135deg,#534AB7,#6C5CE7);color:#fff;border:none;border-radius:12px;padding:14px;font-size:14px;font-weight:700;width:100%;font-family:inherit;cursor:pointer;margin-top:4px;}
+.send-btn:disabled{opacity:.5;}
+.loading{text-align:center;padding:40px;color:#8B8BAD;font-size:13px;}
+.cust-select{border:1.5px solid #E8E6FF;border-radius:10px;padding:10px 12px;font-size:13px;width:100%;font-family:inherit;background:#fff;color:#1E1B4B;outline:none;margin-bottom:10px;}
+</style>
+</head>
+<body>
+<div class="header">
+  <div class="header-title">📄 ตามเอกสาร</div>
+  <div class="header-sub" id="headerSub">กำลังโหลด...</div>
+</div>
+<div class="body" id="mainBody">
+  <div class="loading">กำลังโหลดข้อมูล...</div>
+</div>
+
+<script>
+const API = 'https://finovas-crm-production.up.railway.app';
+const DOC_TEMPLATES = {
+  monthly: ['บิลซื้อ / ใบเสร็จรับเงิน','Statement ธนาคาร','รายงาน Shopee','รายงาน TikTok Shop','รายงาน Lazada','รายงาน Facebook','รายงาน POS'],
+  company: ['หนังสือรับรองบริษัท','ภพ.20','บอจ.5','หนังสือบริคณห์สนธิ','รายการจดทะเบียนบริษัท'],
+  annual: ['ใบ50ทวิ','หลักฐานหัก ณ ที่จ่าย','Statement ธนาคาร (ทั้งปี)','สลิปเงินเดือน','ใบกำกับภาษี']
+};
+
+let custs = [], selected = {}, acctId = null;
+
+async function init() {
+  try {
+    await liff.init({ liffId: '2010493797-xxxxxxxx' }); // ใส่ LIFF ID จริง
+    const params = new URLSearchParams(location.search);
+    acctId = params.get('acct_id');
+    await loadCustomers();
+  } catch(e) {
+    document.getElementById('headerSub').textContent = 'กรุณาเปิดผ่าน LINE ค่ะ';
+  }
+}
+
+async function loadCustomers() {
+  const res = await fetch(API + '/api/customers');
+  custs = await res.json();
+  // filter เฉพาะลูกค้าของนักบัญชีที่ login (ถ้ามี acctId)
+  renderCustSelect();
+}
+
+function renderCustSelect() {
+  document.getElementById('headerSub').textContent = 'เลือกลูกค้าที่ต้องการตามเอกสาร';
+  const body = document.getElementById('mainBody');
+  body.innerHTML = '';
+
+  const card = document.createElement('div');
+  card.className = 'card';
+  card.innerHTML = '<div class="card-title">👤 เลือกลูกค้า</div>';
+
+  const sel = document.createElement('select');
+  sel.className = 'cust-select';
+  sel.innerHTML = '<option value="">-- เลือกลูกค้า --</option>';
+  custs.filter(c=>c.group_line_id).forEach(c => {
+    const opt = document.createElement('option');
+    opt.value = c.id;
+    opt.textContent = c.name + (c.biz?' — '+c.biz:'');
+    sel.appendChild(opt);
+  });
+  sel.onchange = () => { if(sel.value) loadDocPattern(sel.value); };
+  card.appendChild(sel);
+  body.appendChild(card);
+}
+
+async function loadDocPattern(custId) {
+  const body = document.getElementById('mainBody');
+  // โหลด pattern ที่มีอยู่
+  const res = await fetch(API+'/api/doc-patterns/'+custId);
+  const patterns = await res.json();
+  const cust = custs.find(c=>c.id===custId);
+
+  body.innerHTML = '';
+
+  // เลือกลูกค้า dropdown
+  const selCard = document.createElement('div');
+  selCard.className = 'card';
+  selCard.innerHTML = '<div class="card-title">👤 เลือกลูกค้า</div>';
+  const sel2 = document.createElement('select');
+  sel2.className = 'cust-select';
+  sel2.innerHTML = '<option value="">-- เลือกลูกค้า --</option>';
+  custs.filter(c=>c.group_line_id).forEach(c => {
+    const opt = document.createElement('option');
+    opt.value = c.id;
+    opt.textContent = c.name + (c.biz?' — '+c.biz:'');
+    if(c.id===custId) opt.selected = true;
+    sel2.appendChild(opt);
+  });
+  sel2.onchange = () => { if(sel2.value) loadDocPattern(sel2.value); };
+  selCard.appendChild(sel2);
+  body.appendChild(selCard);
+
+  const isFirst = patterns.length === 0;
+  const infoCard = document.createElement('div');
+  infoCard.className = 'card';
+  if(isFirst) {
+    infoCard.innerHTML = '<div class="ai-box">🤖 ครั้งแรก — ติ๊กเองค่ะ AI จะจำรอบต่อไปให้อัตโนมัติ</div>';
+  } else {
+    infoCard.innerHTML = '<div class="ai-box-green">✅ AI จำ Pattern แล้ว — ตรวจสอบและแก้ไขได้เลยค่ะ</div>';
+  }
+  body.appendChild(infoCard);
+
+  // checklist card
+  const chkCard = document.createElement('div');
+  chkCard.className = 'card';
+  chkCard.innerHTML = '<div class="card-title">📎 เอกสารที่ต้องการ</div><div class="tag-row"><span class="tag tag-m">🔄 ทุกเดือน</span><span class="tag tag-o">1️⃣ ครั้งเดียว</span></div>';
+
+  // template เอกสารตามประเภทบริการ
+  const svc = (cust?.service||'').toLowerCase();
+  let tmplDocs = [...DOC_TEMPLATES.monthly];
+  if(svc.includes('จด')) tmplDocs = [...tmplDocs, ...DOC_TEMPLATES.company];
+  if(svc.includes('ภาษี')) tmplDocs = [...tmplDocs, ...DOC_TEMPLATES.annual];
+
+  const existingDocs = patterns.map(p=>p.doc_name);
+  const allDocs = [...new Set([...existingDocs, ...tmplDocs])];
+
+  selected = {};
+  allDocs.forEach(docName => {
+    const existing = patterns.find(p=>p.doc_name===docName);
+    const freq = existing?.frequency || 'monthly';
+    const done = existing?.received || false;
+    selected[docName] = {checked: existing?true:false, freq, done, id:existing?.id};
+
+    const row = document.createElement('div');
+    row.className = 'chk';
+    row.innerHTML = `
+      <div class="chk-box ${selected[docName].checked&&!done?'on':''}" id="box_${docName.replace(/\s/g,'_')}">
+        ${selected[docName].checked||done?'✓':''}
+      </div>
+      <div class="chk-label ${done?'done':''}">${docName}</div>
+      <div class="chk-freq ${done?'freq-done':freq==='monthly'?'freq-m':'freq-o'}" id="freq_${docName.replace(/\s/g,'_')}">
+        ${done?'✅ รับแล้ว':freq==='monthly'?'🔄 ทุกเดือน':'1️⃣ ครั้งเดียว'}
+      </div>`;
+
+    if(!done) {
+      row.onclick = () => toggleDoc(docName);
+    }
+    chkCard.appendChild(row);
+  });
+
+  body.appendChild(chkCard);
+
+  const btn = document.createElement('button');
+  btn.className = 'send-btn';
+  btn.id = 'sendBtn';
+  btn.textContent = '📤 ส่งตามเอกสาร + บันทึก AI';
+  btn.onclick = () => sendDocs(custId, cust?.name||'');
+  body.appendChild(btn);
+}
+
+function toggleDoc(docName) {
+  const key = docName.replace(/\s/g,'_');
+  selected[docName].checked = !selected[docName].checked;
+  const box = document.getElementById('box_'+key);
+  const freqEl = document.getElementById('freq_'+key);
+  if(box) { box.className = 'chk-box'+(selected[docName].checked?' on':''); box.textContent = selected[docName].checked?'✓':''; }
+
+  if(selected[docName].checked) {
+    // toggle frequency
+    if(freqEl) {
+      freqEl.onclick = (e) => {
+        e.stopPropagation();
+        selected[docName].freq = selected[docName].freq==='monthly'?'once':'monthly';
+        freqEl.className = 'chk-freq '+(selected[docName].freq==='monthly'?'freq-m':'freq-o');
+        freqEl.textContent = selected[docName].freq==='monthly'?'🔄 ทุกเดือน':'1️⃣ ครั้งเดียว';
+      };
+    }
+  }
+}
+
+async function sendDocs(custId, custName) {
+  const btn = document.getElementById('sendBtn');
+  btn.disabled = true;
+  btn.textContent = 'กำลังส่ง...';
+
+  const docs = Object.entries(selected)
+    .filter(([_,v])=>v.checked&&!v.done)
+    .map(([name,v])=>({doc_name:name, frequency:v.freq}));
+
+  if(!docs.length) { alert('กรุณาเลือกเอกสารอย่างน้อย 1 รายการค่ะ'); btn.disabled=false; btn.textContent='📤 ส่งตามเอกสาร + บันทึก AI'; return; }
+
+  // บันทึก pattern
+  await fetch(API+'/api/doc-patterns',{method:'POST',headers:{'Content-Type':'application/json'},body:JSON.stringify({customer_id:custId, docs})});
+  // ส่งแจ้งในกลุ่ม
+  await fetch(API+'/api/doc-notify',{method:'POST',headers:{'Content-Type':'application/json'},body:JSON.stringify({cust_ids:[custId], docs:docs.map(d=>d.doc_name)})});
+
+  btn.textContent = '✅ ส่งแล้วค่ะ AI บันทึกแล้ว!';
+  setTimeout(()=>liff.closeWindow(), 2000);
+}
+
+init();
+</script>
+</body>
+</html>
